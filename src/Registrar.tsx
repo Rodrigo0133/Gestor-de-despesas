@@ -1,9 +1,33 @@
 import { KeyRound, Mail, User } from "lucide-react";
+import { useState, type FormEvent } from "react";
 
-function Login() {
+function Registrar() {
+  const [nome, setNome] = useState("");
+  const [email,setEmail] = useState("");
+  const [senha,setsenha] = useState("");
+  const Registrar = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const dados = {
+      nome,
+      email,
+      senha,
+    };
+    const resposta = await fetch("http://localhost:3000/registrar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dados),
+    });
+    const resultado = await resposta.json();
+    console.log(resultado);
+  };
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-surface text-primary">
-      <div className="flex flex-col items-center justify-center gap-7 rounded-md border border-primary/20 bg-surface p-6 shadow-lg">
+      <form
+        onSubmit={Registrar}
+        className="flex flex-col items-center justify-center gap-7 rounded-md border border-primary/20 bg-surface p-6 shadow-lg"
+      >
         <h1 className="text-2xl">Registrar</h1>
 
         <div className="flex">
@@ -12,8 +36,10 @@ function Login() {
           </label>
           <input
             id="nome"
+            value={nome}
             placeholder="Digite o seu nome"
             className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
+            onChange={(event) => setNome(event.target.value)}
           />
         </div>
         <div className="flex">
@@ -21,9 +47,12 @@ function Login() {
             <Mail />
           </label>
           <input
+            type="email"
+            value={email}
             id="email"
             placeholder="Digite o seu email"
             className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
+            onChange={(event) => setEmail(event.target.value)}
           />
         </div>
         <div className="flex">
@@ -31,9 +60,12 @@ function Login() {
             <KeyRound />
           </label>
           <input
+            type="password"
             id="senha"
+            value={senha}
             placeholder="Digite o seu email"
             className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
+            onChange={(event) => setsenha(event.target.value)}
           />
         </div>
         <button
@@ -42,8 +74,8 @@ function Login() {
         >
           Registar
         </button>
-      </div>
+      </form>
     </div>
   );
 }
-export default Login;
+export default Registrar;

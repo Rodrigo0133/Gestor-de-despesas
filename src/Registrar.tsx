@@ -1,15 +1,18 @@
 import { KeyRound, Mail, User } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import Input from "./components/Input";
 
 function Registrar() {
+  const STORAGE_KEY = "Usuario";
   const navigate = useNavigate();
-  const loginGuardado = localStorage.getItem("utilizador");
+  useEffect(() => {
+    const loginGuardado = localStorage.getItem(STORAGE_KEY);
 
-  if (loginGuardado) {
-    navigate("/dashboard");
-  }
+    if (loginGuardado) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   
   const [nome, setNome] = useState("");
   const [email,setEmail] = useState("");
@@ -31,7 +34,7 @@ function Registrar() {
     const resultado = await resposta.json();
 
     if (resposta.ok) {
-      localStorage.setItem("Usuario",JSON.stringify(resultado))
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(resultado))
       navigate("/dashboard");
       return;
     }

@@ -19,7 +19,6 @@ app.post("/novadespesa", async (req, res) => {
 });
 
 
-
 app.post("/login", async (req, res) => {
   const { pesquisa, senha } = req.body;
 

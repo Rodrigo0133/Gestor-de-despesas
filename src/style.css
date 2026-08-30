@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+
+@theme inline {
+  --color-primary: var(--app-color-primary);
+  --color-surface: var(--app-color-surface);
+  --color-income: var(--app-color-income);
+  --color-expense: var(--app-color-expense);
+}

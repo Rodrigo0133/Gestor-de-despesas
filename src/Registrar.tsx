@@ -4,6 +4,12 @@ import { useNavigate } from "react-router";
 
 function Registrar() {
   const navigate = useNavigate();
+  const loginGuardado = localStorage.getItem("utilizador");
+
+  if (loginGuardado) {
+    navigate("/dashboard");
+  }
+  
   const [nome, setNome] = useState("");
   const [email,setEmail] = useState("");
   const [senha,setsenha] = useState("");
@@ -72,7 +78,7 @@ function Registrar() {
             type="password"
             id="senha"
             value={senha}
-            placeholder="Digite o seu email"
+            placeholder="Digite a sua senha"
             className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
             onChange={(event) => setsenha(event.target.value)}
           />

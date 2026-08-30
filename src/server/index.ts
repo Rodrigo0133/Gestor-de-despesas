@@ -20,7 +20,43 @@ app.post("/novadespesa", async (req, res) => {
 
 
 
+app.post("/login", async (req, res) => {
+  const { pesquisa, senha } = req.body;
 
+  if (!pesquisa || !senha) {
+    return res.status(400).json({
+      message: "Preenche todos os campos",
+    });
+  }
+
+  const termo = String(pesquisa);
+  const utilizador = await User.findOne({
+    $or: [{ nome: termo }, { email: termo.trim().toLowerCase() }],
+  });
+
+  if (!utilizador || !utilizador.passwordHash) {
+    return res.status(401).json({
+      message: "Credenciais inválidas",
+    });
+  }
+
+  const senhaCorreta = await argon2.verify(utilizador.passwordHash, String(senha));
+
+  if (!senhaCorreta) {
+    return res.status(401).json({
+      message: "Credenciais inválidas",
+    });
+  }
+
+  return res.status(200).json({
+    message: "Login efetuado",
+    utilizador: {
+      id: utilizador._id,
+      nome: utilizador.nome,
+      email: utilizador.email,
+    },
+  });
+});
 
 
 

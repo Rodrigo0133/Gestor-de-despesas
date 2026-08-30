@@ -1,6 +1,7 @@
 import { KeyRound, Mail, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
+import Input from "./components/Input";
 
 function Registrar() {
   const navigate = useNavigate();
@@ -49,11 +50,10 @@ function Registrar() {
           <label htmlFor="nome" className="mr-2 translate-y-2.5">
             <User />
           </label>
-          <input
+          <Input
             id="nome"
             value={nome}
             placeholder="Digite o seu nome"
-            className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
             onChange={(event) => setNome(event.target.value)}
           />
         </div>
@@ -61,12 +61,11 @@ function Registrar() {
           <label htmlFor="email" className="mr-2 translate-y-2.5">
             <Mail />
           </label>
-          <input
+          <Input
             type="email"
             value={email}
             id="email"
             placeholder="Digite o seu email"
-            className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
             onChange={(event) => setEmail(event.target.value)}
           />
         </div>
@@ -74,12 +73,11 @@ function Registrar() {
           <label htmlFor="senha" className="mr-2 translate-y-2.5">
             <KeyRound />
           </label>
-          <input
+          <Input
             type="password"
             id="senha"
             value={senha}
             placeholder="Digite a sua senha"
-            className="w-full border-primary/20 px-3 py-2 rounded-md focus:border-primary focus:ring-2"
             onChange={(event) => setsenha(event.target.value)}
           />
         </div>

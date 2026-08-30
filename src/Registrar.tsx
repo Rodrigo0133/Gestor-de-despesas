@@ -1,7 +1,9 @@
 import { KeyRound, Mail, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router";
 
 function Registrar() {
+  const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [email,setEmail] = useState("");
   const [senha,setsenha] = useState("");
@@ -20,7 +22,14 @@ function Registrar() {
       body: JSON.stringify(dados),
     });
     const resultado = await resposta.json();
-    console.log(resultado);
+
+    if (resposta.ok) {
+      localStorage.setItem("Usuario",JSON.stringify(resultado))
+      navigate("/dashboard");
+      return;
+    }
+
+    console.log(resultado.message);
   };
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-surface text-primary">

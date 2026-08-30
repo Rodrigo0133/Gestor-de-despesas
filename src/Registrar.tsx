@@ -43,7 +43,7 @@ function Registrar() {
         onSubmit={Registrar}
         className="flex flex-col items-center justify-center gap-7 rounded-md border border-primary/20 bg-surface p-6 shadow-lg"
       >
-        <h1 className="text-2xl">Registrar</h1>
+        <h1 className="text-2xl">Registar</h1>
 
         <div className="flex">
           <label htmlFor="nome" className="mr-2 translate-y-2.5">

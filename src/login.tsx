@@ -18,7 +18,7 @@ function Login(){
     const login = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         const dados = {
-            nome,
+            pesquisa: nome,
             senha
         }
         const resposta = await fetch("http://localhost:3000/login", {
@@ -29,7 +29,8 @@ function Login(){
           body: JSON.stringify(dados),
         });
         const resultado = await resposta.json();
-        if(resultado.ok){
+        if(resposta.ok){
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(resultado));
             navigate("/dashboard")
         }
     }

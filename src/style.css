@@ -1,9 +1,34 @@
 @import "tailwindcss";
 
+:root {
+  --app-font-sans: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+}
 
 @theme inline {
   --color-primary: var(--app-color-primary);
   --color-surface: var(--app-color-surface);
   --color-income: var(--app-color-income);
   --color-expense: var(--app-color-expense);
+  --font-app: var(--app-font-sans);
+}
+
+@layer base {
+  html {
+    font-family: var(--app-font-sans);
+  }
+
+  body,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
 }

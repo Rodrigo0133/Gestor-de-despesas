@@ -7,7 +7,7 @@ const PORT = 3000;
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5174",
   }),
 );
 
@@ -127,8 +127,11 @@ app.get("/auth/:id", async (req,res)=>{
   const IdExistente = await User.findById(id)
   if(IdExistente){
     return res.status(200).json({
-      message: "Usuario encontrado!"
-    })
+      message: "Usuario encontrado!",
+      utilizador: {
+        nome: IdExistente.nome,
+      },
+    });
   }else{
     return res.status(404).json({
       message: "Usuario Não encontrado"

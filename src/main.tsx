@@ -5,6 +5,7 @@ import './style.css'
 import App from './App.tsx'
 import Registrar from "./Registrar.tsx";
 import Login from './login.tsx';
+import Dashboard from './Dashboard.tsx';
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />
+  },
+  {
+    path: "/Dashboard",
+    element: <Dashboard />
   }
 ]);  
 

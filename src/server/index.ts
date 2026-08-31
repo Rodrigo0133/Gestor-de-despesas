@@ -2,6 +2,7 @@ import express from "express";
 import { ligarBaseDados, User } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
+import { isValidObjectId } from "mongoose";
 const PORT = 3000;
 const app = express();
 app.use(
@@ -111,6 +112,31 @@ app.post("/registrar", async (req, res) => {
     },
   });
 });
+
+
+
+app.get("/auth/:id", async (req,res)=>{
+  const { id } = req.params;
+  const verificar_dado = isValidObjectId(id);
+  if(!id || !verificar_dado){
+    return res.status(401).json({
+      message: "Credencias invalidas"
+    })
+  }
+  
+  const IdExistente = await User.findById(id)
+  if(IdExistente){
+    return res.status(200).json({
+      message: "Usuario encontrado!"
+    })
+  }else{
+    return res.status(404).json({
+      message: "Usuario Não encontrado"
+    })
+  }
+})
+
+
 // Database
 await ligarBaseDados();
 

@@ -1,6 +1,96 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { CalendarDays, ChevronDown, CirclePlus, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  ChevronDown,
+  ChevronRight,
+  CirclePlus,
+  Clapperboard,
+  Fuel,
+  House,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+  Utensils,
+  Wallet,
+} from "lucide-react";
+
+const formatarMoeda = new Intl.NumberFormat("pt-PT", {
+  style: "currency",
+  currency: "EUR",
+});
+
+const categorias = [
+  { nome: "Alimentação", valor: 607.3, percentagem: 38, cor: "#ef4444" },
+  { nome: "Transporte", valor: 399.65, percentagem: 25, cor: "#3b82f6" },
+  { nome: "Casa", valor: 319.9, percentagem: 20, cor: "#7c6ee6" },
+  { nome: "Lazer", valor: 272.7, percentagem: 17, cor: "#2fb5aa" },
+];
+
+const movimentosRecentes = [
+  {
+    data: "24/05/2024",
+    descricao: "Supermercado Continente",
+    categoria: "Alimentação",
+    valor: -85.64,
+    Icone: ShoppingCart,
+    estilo: "bg-red-50 text-red-500",
+  },
+  {
+    data: "23/05/2024",
+    descricao: "Repsol",
+    categoria: "Transporte",
+    valor: -52.1,
+    Icone: Fuel,
+    estilo: "bg-blue-50 text-blue-600",
+  },
+  {
+    data: "22/05/2024",
+    descricao: "Salário",
+    categoria: "Receitas",
+    valor: 2850,
+    Icone: BriefcaseBusiness,
+    estilo: "bg-green-50 text-green-700",
+  },
+  {
+    data: "21/05/2024",
+    descricao: "Renda de casa",
+    categoria: "Casa",
+    valor: -750,
+    Icone: House,
+    estilo: "bg-violet-50 text-violet-600",
+  },
+  {
+    data: "19/05/2024",
+    descricao: "Cinema",
+    categoria: "Lazer",
+    valor: -23.4,
+    Icone: Clapperboard,
+    estilo: "bg-teal-50 text-teal-600",
+  },
+  {
+    data: "18/05/2024",
+    descricao: "Restaurante",
+    categoria: "Alimentação",
+    valor: -28.75,
+    Icone: Utensils,
+    estilo: "bg-red-50 text-red-500",
+  },
+];
+
+const totalDespesas = categorias.reduce(
+  (total, categoria) => total + categoria.valor,
+  0,
+);
+
+const estilosCategoria: Record<string, string> = {
+  Alimentação: "bg-red-50 text-red-600",
+  Transporte: "bg-blue-50 text-blue-600",
+  Receitas: "bg-green-50 text-green-700",
+  Casa: "bg-violet-50 text-violet-600",
+  Lazer: "bg-teal-50 text-teal-700",
+};
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -161,16 +251,122 @@ function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-[2fr_3fr]">
-          <div></div>
-          <div className="bg-white rounded-md p-2">
-            <div className="flex w-full">
-              <h2>Ultimas Transições</h2>
-              <a href="apple.com" className="ml-auto mr-4">
-                Ver Todos
-              </a>
+        <div className="grid w-full grid-cols-1 gap-4 xl:grid-cols-[minmax(360px,2fr)_minmax(600px,3fr)]">
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="font-bold text-slate-900">Despesas por categoria</h2>
+
+            <div className="mt-7 flex min-h-[280px] flex-col items-center justify-center gap-8 sm:flex-row">
+              <div
+                role="img"
+                aria-label="Gráfico das despesas: 38% alimentação, 25% transporte, 20% casa e 17% lazer"
+                className="relative h-56 w-56 shrink-0 rounded-full"
+                style={{
+                  background:
+                    "conic-gradient(#ef4444 0 38%, #ffffff 38% 38.5%, #3b82f6 38.5% 63%, #ffffff 63% 63.5%, #7c6ee6 63.5% 83%, #ffffff 83% 83.5%, #2fb5aa 83.5% 100%)",
+                }}
+              >
+                <div className="absolute inset-12 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner">
+                  <strong className="text-xl text-slate-900">
+                    {formatarMoeda.format(totalDespesas)}
+                  </strong>
+                  <span className="mt-1 text-sm text-slate-500">Total</span>
+                </div>
+              </div>
+
+              <ul className="w-full max-w-56 space-y-4 text-sm">
+                {categorias.map((categoria) => (
+                  <li
+                    key={categoria.nome}
+                    className="grid grid-cols-[1fr_auto] items-center gap-x-4"
+                  >
+                    <span className="flex items-center gap-2 font-semibold text-slate-700">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: categoria.cor }}
+                      />
+                      {categoria.nome}
+                    </span>
+                    <span className="row-span-2 text-slate-500">
+                      {categoria.percentagem}%
+                    </span>
+                    <span className="mt-1 pl-5 text-slate-700">
+                      {formatarMoeda.format(categoria.valor)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+
+            <div className="mt-3 flex justify-end">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50">
+                Ver todas as categorias
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5">
+              <h2 className="font-bold text-slate-900">Movimentos recentes</h2>
+              <button className="text-sm font-medium text-blue-600 transition hover:text-blue-800">
+                Ver todos
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[680px] text-left text-sm">
+                <thead className="text-slate-700">
+                  <tr className="border-b border-slate-200">
+                    <th className="px-5 py-3 font-semibold">Data</th>
+                    <th className="px-3 py-3 font-semibold">Descrição</th>
+                    <th className="px-3 py-3 font-semibold">Categoria</th>
+                    <th className="px-5 py-3 text-right font-semibold">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {movimentosRecentes.map((movimento) => {
+                    const Icone = movimento.Icone;
+
+                    return (
+                      <tr
+                        key={`${movimento.data}-${movimento.descricao}`}
+                        className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="whitespace-nowrap px-5 py-3 text-slate-500">
+                          {movimento.data}
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className={`rounded-lg p-2 ${movimento.estilo}`}>
+                              <Icone size={18} />
+                            </span>
+                            <span className="font-medium text-slate-700">
+                              {movimento.descricao}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span
+                            className={`rounded-md px-2.5 py-1 text-xs font-semibold ${estilosCategoria[movimento.categoria]}`}
+                          >
+                            {movimento.categoria}
+                          </span>
+                        </td>
+                        <td
+                          className={`whitespace-nowrap px-5 py-3 text-right font-semibold ${
+                            movimento.valor >= 0 ? "text-green-700" : "text-red-600"
+                          }`}
+                        >
+                          {movimento.valor >= 0 ? "+" : ""}
+                          {formatarMoeda.format(movimento.valor)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ const PORT = 3000;
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5174",
+    origin: "http://localhost:5173",
   }),
 );
 
@@ -16,6 +16,25 @@ app.use(express.json());
 // Routes
 app.post("/novadespesa", async (req, res) => {
   console.log(req.body);
+  const { descricao, valor, data, categoria, id } = req.body;
+  if (!descricao || !valor || !data || !categoria || !id) {
+    return res.status(400).json({
+      message: "Preenche todos os campos",
+    });
+  }
+  const verificar_dado = isValidObjectId(id);
+  if (!verificar_dado) {
+    return res.status(401).json({
+      message: "Credencias invalidas",
+    });
+  }
+  const IdExistente = await User.findById(id);
+  if (!IdExistente) {
+    return res.status(404).json({
+      message: "Usuario Não encontrado",
+    });
+  }
+  
   res.status(200).send({ message: "Despesa recebida" });
 });
 

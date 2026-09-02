@@ -1,18 +1,26 @@
-import mongoose, { Schema, model, connect } from "mongoose";
+import "dotenv/config";
+import mongoose, { Schema, model } from "mongoose";
+
 
 export async function ligarBaseDados() {
-  await connect("mongodb://127.0.0.1:27017/Despesas");
+  const mongoUri = process.env.MONGODB_URI;
+
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI não definida no ficheiro .env");
+  }
+
+  await mongoose.connect(mongoUri);
   console.log("MongoDB ligado");
 }
 
 const userSchema = new Schema({
     nome: {
         type: String,
-        require: true
+        required: true
     },
     email: {
         type: String,
-        require: true,
+        required: true,
         unique: true
     },
     passwordHash: {
@@ -39,7 +47,8 @@ const expenseSchema = new Schema(
       default: Date.now,
     },
     categoria: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Categorias",
       required: true,
     },
     userId: {
@@ -49,10 +58,14 @@ const expenseSchema = new Schema(
     },
   },
   {
-    collections: "expenses",
+    collection: "expenses",
     timestamps: true,
   },
 );
+
+
+expenseSchema.index({ userId: 1, data: -1 });
+
 const categoriasSchema = new Schema({
     nome : {
         type: String,
@@ -69,7 +82,7 @@ const categoriasSchema = new Schema({
         }
 },
 {
-        collections: "categorias",
+        collection: "categorias",
         timestamps: true
 })
 
@@ -98,10 +111,13 @@ const receitasSchema = new Schema(
     },
   },
   {
-    collections: "receitas",
+    collection: "receitas",
     timestamps: true,
   },
 );
+
+
+receitasSchema.index({ userId: 1, data: -1 });
 
 export const receitas = model("receitas",receitasSchema)
 export const categorias = model("categorias", categoriasSchema)

@@ -1,9 +1,9 @@
 import express from "express";
-import { ligarBaseDados, User } from "./database/db.js";
+import { ligarBaseDados, User, expense } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
 import { isValidObjectId } from "mongoose";
-const PORT = 3000;
+const PORT = Number(process.env.PORT ?? 3000);
 const app = express();
 app.use(
   cors({
@@ -34,7 +34,24 @@ app.post("/novadespesa", async (req, res) => {
       message: "Usuario Não encontrado",
     });
   }
-  
+  const despesas = IdExistente.get("expenses") ?? [];
+  IdExistente.set("expenses", [
+    ...despesas,
+    {
+      descricao: descricao,
+      valor: valor,
+      data: data,
+      categoria: categoria,
+    },
+  ]);
+  await IdExistente.save().then(() => {
+    console.log("Despesa adicionada");
+  }).catch((err) => {
+    console.log(err);
+    return res.status(500).json({
+      message: "Erro na base de dados!",
+    });
+  });
   res.status(200).send({ message: "Despesa recebida" });
 });
 

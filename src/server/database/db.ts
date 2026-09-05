@@ -45,7 +45,7 @@ const expenseSchema = new Schema(
     },
     data: {
       type: Date,
-      default: Date.now,
+      required: true,
     },
     categoria: {
       type: mongoose.Schema.Types.ObjectId,
@@ -100,7 +100,7 @@ const receitasSchema = new Schema(
     },
     data: {
       type: Date,
-      default: Date.now,
+      required: true,
     },
     categoria: {
       type: String,

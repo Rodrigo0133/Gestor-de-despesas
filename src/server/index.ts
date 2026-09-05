@@ -10,6 +10,21 @@ const mongoUri = process.env.MONGODB_URI;
 const sessionSecret = process.env.SESSION_SECRET;
 const PORT = Number(process.env.PORT ?? 3000);
 const app = express();
+
+function converterDataDoUtilizador(valor: unknown): Date | null {
+  if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+    return null;
+  }
+
+  const data = new Date(`${valor}T00:00:00.000Z`);
+
+  if (Number.isNaN(data.getTime()) || data.toISOString().slice(0, 10) !== valor) {
+    return null;
+  }
+
+  return data;
+}
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -62,6 +77,15 @@ app.post("/novadespesa", async (req, res) => {
       message: "Preenche todos os campos",
     });
   }
+
+  const dataDoMovimento = converterDataDoUtilizador(data);
+
+  if (!dataDoMovimento) {
+    return res.status(400).json({
+      message: "Data inválida. Usa o formato AAAA-MM-DD",
+    });
+  }
+
   const verificar_dado = isValidObjectId(id);
   if (!verificar_dado) {
     return res.status(401).json({
@@ -94,7 +118,7 @@ app.post("/novadespesa", async (req, res) => {
     const novaDespesa = await expense.create({
       descricao,
       valor,
-      data,
+      data: dataDoMovimento,
       categoria,
       userId: id,
     });
@@ -106,6 +130,43 @@ app.post("/novadespesa", async (req, res) => {
     console.log(err);
     return res.status(500).json({
       message: "Erro ao guardar despesa!",
+    });
+  }
+});
+app.get("/movimentos", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  try {
+    const [listaDespesas, listaReceitas] = await Promise.all([
+      expense.find({ userId }).lean(),
+      receitas.find({ userId }).lean(),
+    ]);
+
+    const movimentos = [
+      ...listaDespesas.map((despesa) => ({
+        ...despesa,
+        tipo: "despesa" as const,
+      })),
+      ...listaReceitas.map((receita) => ({
+        ...receita,
+        tipo: "receita" as const,
+      })),
+    ].sort(
+      (a, b) =>
+        new Date(b.data ?? 0).getTime() - new Date(a.data ?? 0).getTime(),
+    );
+
+    return res.status(200).json({ movimentos });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Erro ao procurar movimentos",
     });
   }
 });
@@ -153,6 +214,15 @@ app.post("/receita", async (req,res) => {
       message: "Preenche todos os campos",
     });
   }
+
+  const dataDoMovimento = converterDataDoUtilizador(data);
+
+  if (!dataDoMovimento) {
+    return res.status(400).json({
+      message: "Data inválida. Usa o formato AAAA-MM-DD",
+    });
+  }
+
   const verificar_dado = isValidObjectId(userId);
   if (!verificar_dado) {
     return res.status(401).json({
@@ -184,7 +254,7 @@ app.post("/receita", async (req,res) => {
     const novareceita = await receitas.create({
       descricao,
       valor,
-      data,
+      data: dataDoMovimento,
       categoria,
       userId: userId
     });
@@ -288,7 +358,59 @@ app.post("/login", async (req, res) => {
     });
   });
 });
-
+app.post("/categoria",async (req,res) => {
+  const { nome, cor } = req.body;
+  const userId = req.session.userId
+  if(!nome || !cor){
+    return res.status(400).json({
+      message: "Dados Invalidos!"
+    })
+  }
+  if(!userId){
+    return res.status(401).json({
+      message: "Precisa ter Login feito!"
+    })
+  }
+  const NovaCategoria = await categorias.create({
+    nome,
+    cor,
+    userId: userId,
+  })
+  if(!NovaCategoria){
+    return res.status(500).json({
+      message: "Falha em guardar categoria na base de dados"
+    })
+  }
+  return res.status(201).json({
+    message: "Categoria Criada!"
+  })
+})
+app.delete("/categoria/:id", async (req,res) => {
+  const userId = req.session.userId
+  const id = req.params.id
+  if(!userId){
+    return res.status(401).json({
+      message: "Precisa ter login"
+    })
+  }
+  if(!id){
+    return res.status(400).json({
+      message: "Dado invalido"
+    })
+  }
+  const removercategoria = await categorias.findByIdAndDelete({
+    id,
+    userId: userId
+  })
+  if(!removercategoria){
+    return res.status(404).json({
+      message: "erro!"
+    })
+  }
+  return res.status(200).json({
+    message: "Categoria Removida"
+  })
+})
 app.post("/registrar", async (req, res) => {
   const { nome, email, senha } = req.body;
   if (!nome || !email || !senha) {

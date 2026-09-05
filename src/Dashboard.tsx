@@ -84,6 +84,13 @@ const totalDespesas = categorias.reduce(
   0,
 );
 
+
+function AbrirDespesas(navigate: ReturnType<typeof useNavigate>): void {
+  console.log("Abrindo página de despesas...");
+  navigate("/Dashboard/Despesas");
+}
+
+
 const estilosCategoria: Record<string, string> = {
   Alimentação: "bg-red-50 text-red-600",
   Transporte: "bg-blue-50 text-blue-600",
@@ -181,7 +188,7 @@ function Dashboard() {
                   className="pointer-events-none absolute right-3 text-slate-500"
                 />
               </div>
-              <button className="appearance-none rounded-lg border border-slate-200 bg-blue-400  pl-5 pr-5 text-sm font-medium text-black outline-none  inline-flex items-center gap-2 hover:bg-blue-500 hover:cursor-pointer transition-all">
+              <button onClick={() => AbrirDespesas(navigate)} className="appearance-none rounded-lg border border-slate-200 bg-blue-400  pl-5 pr-5 text-sm font-medium text-black outline-none  inline-flex items-center gap-2 hover:bg-blue-500 hover:cursor-pointer transition-all">
                 <CirclePlus size={20} /> Adicionar Movimento
               </button>
             </div>

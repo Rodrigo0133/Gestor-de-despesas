@@ -1,5 +1,5 @@
 import express from "express";
-import { ligarBaseDados, User, expense } from "./database/db.js";
+import { ligarBaseDados, User } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
 import { isValidObjectId } from "mongoose";

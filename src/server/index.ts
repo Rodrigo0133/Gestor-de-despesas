@@ -1,5 +1,5 @@
 import express from "express";
-import { ligarBaseDados, User, expense, categorias } from "./database/db.js";
+import { ligarBaseDados, User, expense, categorias , receitas } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
 import "dotenv/config";
@@ -109,7 +109,127 @@ app.post("/novadespesa", async (req, res) => {
     });
   }
 });
+app.delete("/despesas/:id", async (req,res) => {
+  const userId = req.session.userId
+  const despesaId = req.params.id;
+  if(!userId){
+    return res.status(401).json({
+      message: "Precisas ter uma conta logada!"
+    })
+  }
+  if(!despesaId){
+    return res.status(401).json({
+      message: "Precisas ter uma despesa"
+    })
+  }
+  if (!isValidObjectId(despesaId)) {
+    return res.status(400).json({
+      message: "ID da despesa inválido",
+    });
+  }
+  const despesaEliminada = await expense.findOneAndDelete({
+    _id: despesaId,
+    userId
+  })
+  if(!despesaEliminada){
+    return res.status(404).json({
+      message: "Despesa não encontrada"
+    })
+  }
+  return res.status(200).json({
+    message: "Despesa Elimanda!"    
+  })
+})
+app.post("/receita", async (req,res) => {
+  const userId = req.session.userId
+  if(!userId){
+    return res.status(401).json({
+      message: "Precisas ter uma conta logada!"
+    })
+  }
+  const { descricao, valor, data, categoria } = req.body;
+  if (!descricao || !valor || !data || !categoria) {
+    return res.status(400).json({
+      message: "Preenche todos os campos",
+    });
+  }
+  const verificar_dado = isValidObjectId(userId);
+  if (!verificar_dado) {
+    return res.status(401).json({
+      message: "Credencias invalidas",
+    });
+  }
+  const IdExistente = await User.findById(userId);
+  if (!IdExistente) {
+    return res.status(404).json({
+      message: "Usuario Não encontrado",
+    });
+  }
+  if (typeof categoria !== "string" || !isValidObjectId(categoria)) {
+    return res.status(400).json({
+      message: "Categoria inválida",
+    });
+  }
+  const categoriaExistente = await categorias.findOne({
+    _id: categoria,
+    userId
+  });
 
+  if (!categoriaExistente) {
+    return res.status(400).json({
+      message: "Categoria não encontrada",
+    });
+  }
+  try {
+    const novareceita = await receitas.create({
+      descricao,
+      valor,
+      data,
+      categoria,
+      userId: userId
+    });
+    return res.status(201).json({
+      message: "Despesa Adicionada",
+      despesa: novareceita,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Erro ao guardar despesa!",
+    });
+  }
+})
+app.delete("/receita/:id", async (req,res) => {
+  const userId = req.session.userId
+  const receitaId = req.params.id;
+  if(!userId){
+    return res.status(401).json({
+      message: "Precisas ter uma conta logada!"
+    })
+  }
+  if(!receitaId){
+    return res.status(401).json({
+      message: "Precisas ter uma despesa"
+    })
+  }
+  if (!isValidObjectId(receitaId)) {
+    return res.status(400).json({
+      message: "ID da despesa inválido",
+    });
+  }
+  const receitaEliminada = await receitas.findOneAndDelete({
+    _id: receitaId,
+    userId
+  })
+  if(!receitaEliminada){
+    return res.status(404).json({
+      message: "Despesa não encontrada"
+    })
+  }
+  return res.status(200).json({
+    message: "Despesa Elimanda!"    
+  })
+})
 app.post("/login", async (req, res) => {
   const { pesquisa, senha } = req.body;
 

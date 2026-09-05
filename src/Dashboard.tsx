@@ -157,7 +157,7 @@ function Dashboard() {
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-      <aside className="flex h-full w-full flex-col bg-slate-900 p-4 text-white justify-center ">
+      <aside className="flex h-full w-full flex-col gap-3 bg-slate-900 p-4 text-white justify-center ">
         <p className="text-lg font-semibold">Gestor de despesas</p>
         <p className="mt-auto text-lg text-center"> Olá {nome}</p>
         <button

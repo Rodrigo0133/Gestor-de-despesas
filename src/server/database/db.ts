@@ -1,8 +1,6 @@
 import "dotenv/config";
 import mongoose, { Schema, model } from "mongoose";
 
-
-
 export async function ligarBaseDados() {
   const mongoUri = process.env.MONGODB_URI;
 
@@ -14,25 +12,27 @@ export async function ligarBaseDados() {
   console.log("MongoDB ligado");
 }
 
-const userSchema = new Schema({
+const userSchema = new Schema(
+  {
     nome: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     email: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     passwordHash: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
-},
-{
+  },
+  {
     collection: "users",
-    timestamps: true
-});
+    timestamps: true,
+  },
+);
 const expenseSchema = new Schema(
   {
     descricao: {
@@ -49,7 +49,7 @@ const expenseSchema = new Schema(
     },
     categoria: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Categorias",
+      ref: "categorias",
       required: true,
     },
     userId: {
@@ -64,28 +64,29 @@ const expenseSchema = new Schema(
   },
 );
 
-
 expenseSchema.index({ userId: 1, data: -1 });
 
-const categoriasSchema = new Schema({
-    nome : {
-        type: String,
-        required: true
+const categoriasSchema = new Schema(
+  {
+    nome: {
+      type: String,
+      required: true,
     },
     cor: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        }
-},
-{
-        collection: "categorias",
-        timestamps: true
-})
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    collection: "categorias",
+    timestamps: true,
+  },
+);
 
 const receitasSchema = new Schema(
   {
@@ -94,8 +95,8 @@ const receitasSchema = new Schema(
       required: true,
     },
     valor: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true,
     },
     data: {
       type: Date,
@@ -117,10 +118,9 @@ const receitasSchema = new Schema(
   },
 );
 
-
 receitasSchema.index({ userId: 1, data: -1 });
 
-export const receitas = model("receitas",receitasSchema)
-export const categorias = model("categorias", categoriasSchema)
+export const receitas = model("receitas", receitasSchema);
+export const categorias = model("categorias", categoriasSchema);
 export const expense = model("expenses", expenseSchema);
 export const User = model("User", userSchema);

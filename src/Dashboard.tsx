@@ -9,6 +9,7 @@ import {
   Clapperboard,
   Fuel,
   House,
+  LogOut,
   ShoppingCart,
   TrendingDown,
   TrendingUp,
@@ -103,42 +104,38 @@ function Dashboard() {
   const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [dia, setDia] = useState("");
+
+  const sair = async () => {
+    const resposta = await fetch("http://localhost:3000/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (resposta.ok) {
+      navigate("/login");
+    }
+  };
+
   useEffect(() => {
-    const STORAGE_KEY = "Usuario";
-
     const verificarUsuario = async () => {
-      const storage = localStorage.getItem(STORAGE_KEY);
-
-      if (!storage) {
-        navigate("/login");
-        return;
-      }
-
       try {
-        const dados = JSON.parse(storage);
-        const userId = dados.utilizador?.id;
+        const resposta_id = await fetch("http://localhost:3000/auth", {
+          credentials: "include",
+        });
 
-        if (!userId) {
-          localStorage.removeItem("Usuario");
+        if (resposta_id.status === 401) {
           navigate("/login");
           return;
         }
 
-        const resposta_id = await fetch(
-          `http://localhost:3000/auth/${userId}`,
-          {
-            method: "GET",
-          },
-        );
-
         if (!resposta_id.ok) {
-          localStorage.removeItem("Usuario");
-          navigate("/login");
+          throw new Error("Erro ao verificar sessão");
         }
+
         const resultado = await resposta_id.json();
         setNome(resultado.utilizador.nome);
       } catch {
-        navigate("/login");
+        alert("Não foi possível contactar o servidor.");
       }
     };
     const VerificarHoras = () => {
@@ -160,7 +157,18 @@ function Dashboard() {
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-      <div className="w-full h-full">MENU</div>
+      <aside className="flex h-full w-full flex-col bg-slate-900 p-4 text-white justify-center ">
+        <p className="text-lg font-semibold">Gestor de despesas</p>
+        <p className="mt-auto text-lg text-center"> Olá {nome}</p>
+        <button
+          type="button"
+          onClick={sair}
+          className="items-end inline-flex cursor-pointer  gap-2 rounded-lg px-3 py-2 text-sm transition hover:bg-white/10"
+        >
+          <LogOut size={18} />
+          Sair
+        </button>
+      </aside>
       <div className="w-full h-full  p-3">
         <div className="mb-5 flex">
           <div id="Saudação">

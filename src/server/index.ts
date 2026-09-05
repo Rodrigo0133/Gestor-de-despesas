@@ -1,23 +1,63 @@
 import express from "express";
-import { ligarBaseDados, User } from "./database/db.js";
+import { ligarBaseDados, User, expense, categorias } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
+import "dotenv/config";
+import session from "express-session";
+import MongoStore from "connect-mongo";
 import { isValidObjectId } from "mongoose";
+const mongoUri = process.env.MONGODB_URI;
+const sessionSecret = process.env.SESSION_SECRET;
 const PORT = Number(process.env.PORT ?? 3000);
 const app = express();
 app.use(
   cors({
     origin: "http://localhost:5173",
+    credentials: true,
   }),
 );
+declare module "express-session" {
+  interface SessionData {
+    userId: string;
+  }
+}
 
+if (!mongoUri || !sessionSecret) {
+  throw new Error("Define MONGODB_URI e SESSION_SECRET no .env");
+}
+
+app.use(
+  session({
+    name: "gestor.sid",
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: mongoUri,
+    }),
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  }),
+);
 app.use(express.json());
 
 // Routes
 app.post("/novadespesa", async (req, res) => {
   console.log(req.body);
-  const { descricao, valor, data, categoria, id } = req.body;
-  if (!descricao || !valor || !data || !categoria || !id) {
+  const id = req.session.userId;
+
+  if (!id) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  const { descricao, valor, data, categoria } = req.body;
+  if (!descricao || !valor || !data || !categoria) {
     return res.status(400).json({
       message: "Preenche todos os campos",
     });
@@ -34,27 +74,41 @@ app.post("/novadespesa", async (req, res) => {
       message: "Usuario Não encontrado",
     });
   }
-  const despesas = IdExistente.get("expenses") ?? [];
-  IdExistente.set("expenses", [
-    ...despesas,
-    {
-      descricao: descricao,
-      valor: valor,
-      data: data,
-      categoria: categoria,
-    },
-  ]);
-  await IdExistente.save().then(() => {
-    console.log("Despesa adicionada");
-  }).catch((err) => {
+  if (typeof categoria !== "string" || !isValidObjectId(categoria)) {
+    return res.status(400).json({
+      message: "Categoria inválida",
+    });
+  }
+
+  const categoriaExistente = await categorias.findOne({
+    _id: categoria,
+    userId: id,
+  });
+
+  if (!categoriaExistente) {
+    return res.status(400).json({
+      message: "Categoria não encontrada",
+    });
+  }
+  try {
+    const novaDespesa = await expense.create({
+      descricao,
+      valor,
+      data,
+      categoria,
+      userId: id,
+    });
+    return res.status(201).json({
+      message: "Despesa Adicionada",
+      despesa: novaDespesa,
+    });
+  } catch (err) {
     console.log(err);
     return res.status(500).json({
-      message: "Erro na base de dados!",
+      message: "Erro ao guardar despesa!",
     });
-  });
-  res.status(200).send({ message: "Despesa recebida" });
+  }
 });
-
 
 app.post("/login", async (req, res) => {
   const { pesquisa, senha } = req.body;
@@ -76,7 +130,10 @@ app.post("/login", async (req, res) => {
     });
   }
 
-  const senhaCorreta = await argon2.verify(utilizador.passwordHash, String(senha));
+  const senhaCorreta = await argon2.verify(
+    utilizador.passwordHash,
+    String(senha),
+  );
 
   if (!senhaCorreta) {
     return res.status(401).json({
@@ -84,17 +141,33 @@ app.post("/login", async (req, res) => {
     });
   }
 
-  return res.status(200).json({
-    message: "Login efetuado",
-    utilizador: {
-      id: utilizador._id,
-      nome: utilizador.nome,
-      email: utilizador.email,
-    },
+  req.session.regenerate((err) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Erro ao iniciar sessão",
+      });
+    }
+
+    req.session.userId = utilizador._id.toString();
+
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({
+          message: "Erro ao guardar sessão",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Login efetuado",
+        utilizador: {
+          id: utilizador._id,
+          nome: utilizador.nome,
+          email: utilizador.email,
+        },
+      });
+    });
   });
 });
-
-
 
 app.post("/registrar", async (req, res) => {
   const { nome, email, senha } = req.body;
@@ -149,32 +222,44 @@ app.post("/registrar", async (req, res) => {
   });
 });
 
+app.get("/auth", async (req, res) => {
+  const userId = req.session.userId;
 
-
-app.get("/auth/:id", async (req,res)=>{
-  const { id } = req.params;
-  const verificar_dado = isValidObjectId(id);
-  if(!id || !verificar_dado){
+  if (!userId) {
     return res.status(401).json({
-      message: "Credencias invalidas"
-    })
-  }
-  
-  const IdExistente = await User.findById(id)
-  if(IdExistente){
-    return res.status(200).json({
-      message: "Usuario encontrado!",
-      utilizador: {
-        nome: IdExistente.nome,
-      },
+      message: "Precisas de iniciar sessão",
     });
-  }else{
-    return res.status(404).json({
-      message: "Usuario Não encontrado"
-    })
   }
-})
 
+  const utilizador = await User.findById(userId);
+
+  if (!utilizador) {
+    return res.status(401).json({
+      message: "Utilizador não encontrado",
+    });
+  }
+
+  return res.status(200).json({
+    utilizador: {
+      id: utilizador._id,
+      nome: utilizador.nome,
+      email: utilizador.email,
+    },
+  });
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Erro ao terminar sessão",
+      });
+    }
+
+    res.clearCookie("gestor.sid", { path: "/" });
+    return res.sendStatus(204);
+  });
+});
 
 // Database
 await ligarBaseDados();

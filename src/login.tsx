@@ -1,18 +1,10 @@
 import { KeyRound, User } from "lucide-react"
 import Input from "./components/Input"
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent, useEffect } from "react"
 import { useNavigate } from "react-router";
 
 function Login(){
-    const STORAGE_KEY = "Usuario";
       const navigate = useNavigate();
-      useEffect(() => {
-        const loginGuardado = localStorage.getItem(STORAGE_KEY);
-
-        if (loginGuardado) {
-          navigate("/dashboard");
-        }
-      }, [navigate]);
     const [nome,setNome] = useState("")
     const [senha,setsenha] = useState("")
     const login = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,6 +15,7 @@ function Login(){
         }
         const resposta = await fetch("http://localhost:3000/login", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -30,10 +23,34 @@ function Login(){
         });
         const resultado = await resposta.json();
         if(resposta.ok){
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(resultado));
             navigate("/dashboard")
+        } else {
+            alert(resultado.message);
         }
     }
+    useEffect(() => {
+        const verificarUsuario = async () => {
+          try {
+            const resposta_id = await fetch("http://localhost:3000/auth", {
+              credentials: "include",
+            });
+    
+            
+    
+            if (!resposta_id.ok) {
+              throw new Error("Erro ao verificar sessão");
+            }else{
+              navigate("/dashboard")
+            }
+    
+            const resultado = await resposta_id.json();
+            setNome(resultado.utilizador.nome);
+          } catch {
+            alert("Não foi possível contactar o servidor.");
+          }
+        };
+        verificarUsuario();
+    },[navigate])
     return(
         <div className="flex min-h-screen w-full items-center justify-center bg-surface text-primary">
               <form

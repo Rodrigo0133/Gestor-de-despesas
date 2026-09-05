@@ -2,6 +2,7 @@ import "dotenv/config";
 import mongoose, { Schema, model } from "mongoose";
 
 
+
 export async function ligarBaseDados() {
   const mongoUri = process.env.MONGODB_URI;
 

@@ -6,6 +6,7 @@ import "dotenv/config";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import { isValidObjectId } from "mongoose";
+import Despesas from "../Despesas.js";
 const mongoUri = process.env.MONGODB_URI;
 const sessionSecret = process.env.SESSION_SECRET;
 const PORT = Number(process.env.PORT ?? 3000);
@@ -503,6 +504,201 @@ app.post("/logout", (req, res) => {
   });
 });
 
+app.get("/categorias", async (req,res) => {
+  const UserId = req.session.userId
+  if(!UserId){
+    return res.status(400).json({
+      message: "Precisa de ter uma conta logada!"
+    })
+  }
+  try{
+    const utilizador = await categorias.findOne({
+      userId: UserId,
+    })
+    return res.status(201).json({
+      utilizador,
+    })
+  }catch(err){
+    console.log(err);
+    return res.status(404).json({
+      message: "erro na base de dados!",
+    })
+  }
+})
+
+app.patch("/categorias/:id", async (req,res) => {
+  const UserId = req.session.userId
+  const id = req.params.id
+  const {nome, cor} = req.body;
+  if(!UserId){
+    return res.status(400).json({
+      message: "Precisa de ter uma conta logada!"
+    })
+  }
+  if(!id || !nome || !cor){
+    return res.status(400).json({
+      message: "erro nos dados!"
+    })
+  }
+  try{
+    const categoria = await categorias.findByIdAndUpdate({
+      UserId,
+      id,
+    },{
+      nome,
+      cor
+    })
+    return res.status(200).json({
+    message: "Categoria atualizada!",
+    categoria,
+    })
+  }catch(err){
+    console.log(err)
+    return res.status(404).json({
+      message: "erro ao encontrar a categoria!"
+    })
+  }
+})
+app.get("/movimentos/:id", async (req, res) => {
+  const userId = req.session.userId;
+  const movimentoId = req.params.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  if (!isValidObjectId(movimentoId)) {
+    return res.status(400).json({
+      message: "ID do movimento inválido",
+    });
+  }
+
+  try {
+    const [despesa, receita] = await Promise.all([
+      expense.findOne({
+        _id: movimentoId,
+        userId,
+      }).lean(),
+
+      receitas.findOne({
+        _id: movimentoId,
+        userId,
+      }).lean(),
+    ]);
+
+    if (despesa) {
+      return res.status(200).json({
+        movimento: {
+          ...despesa,
+          tipo: "despesa",
+        },
+      });
+    }
+
+    if (receita) {
+      return res.status(200).json({
+        movimento: {
+          ...receita,
+          tipo: "receita",
+        },
+      });
+    }
+
+    return res.status(404).json({
+      message: "Movimento não encontrado",
+    });
+  } catch (erro) {
+    console.error(erro);
+
+    return res.status(500).json({
+      message: "Erro ao procurar movimento",
+    });
+  }
+});
+app.patch("/despesas/:id", async (req,res ) => {
+  const userId = req.session.userId;
+  const despesaid = req.params.id;
+  const {descricao, valor,data,categoria} = req.body
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  if (!isValidObjectId(despesaid)) {
+    return res.status(400).json({
+      message: "ID do movimento inválido",
+    });
+  }
+  if(!descricao || !valor || !data|| !categoria){
+    return res.status(400).json({
+      message: "falta de valores",
+    });
+  }
+  try{
+    const DespesaAtualizada = await expense.findByIdAndUpdate({
+      userId: userId,
+      id: despesaid
+    },{
+      descricao,
+      valor,
+      data,
+      categoria,
+    })
+    return res.status(201).json({
+      message: "despesa atualizada",
+      DespesaAtualizada,
+    })
+  }catch(err){
+    console.log(err)
+    return res.status(500).json({
+      message: "Erro ao procurar movimento",
+    });
+  }
+})
+app.patch("/receitas/:id", async (req,res ) => {
+  const userId = req.session.userId;
+  const receitasid = req.params.id;
+  const {descricao, valor,data,categoria} = req.body
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  if (!isValidObjectId(receitasid)) {
+    return res.status(400).json({
+      message: "ID do movimento inválido",
+    });
+  }
+  if(!descricao || !valor || !data|| !categoria){
+    return res.status(400).json({
+      message: "falta de valores",
+    });
+  }
+  try{
+    const ReceitaAtualizada = await receitas.findByIdAndUpdate({
+      userId: userId,
+      id: receitasid
+    },{
+      descricao,
+      valor,
+      data,
+      categoria,
+    })
+    return res.status(201).json({
+      message: "despesa atualizada",
+      ReceitaAtualizada,
+    })
+  }catch(err){
+    console.log(err)
+    return res.status(500).json({
+      message: "Erro ao procurar movimento",
+    });
+  }
+})
 // Database
 await ligarBaseDados();
 

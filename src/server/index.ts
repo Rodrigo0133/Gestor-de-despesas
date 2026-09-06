@@ -6,7 +6,6 @@ import "dotenv/config";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import { isValidObjectId } from "mongoose";
-import Despesas from "../Despesas.js";
 const mongoUri = process.env.MONGODB_URI;
 const sessionSecret = process.env.SESSION_SECRET;
 const PORT = Number(process.env.PORT ?? 3000);
@@ -698,6 +697,86 @@ app.patch("/receitas/:id", async (req,res ) => {
       message: "Erro ao procurar movimento",
     });
   }
+})
+app.get("/resumo", async (req,res) => {
+  const userId = req.session.userId;
+  const mesSelecionado = req.query.mes;
+
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  if (
+    typeof mesSelecionado !== "string" ||
+    !/^\d{4}-\d{2}$/.test(mesSelecionado)
+  ) {
+    return res.status(400).json({
+      message: "Usa o formato AAAA-MM",
+    });
+  }
+
+  const [ano, mes] = mesSelecionado.split("-").map(Number);
+
+  if (mes < 1 || mes > 12) {
+    return res.status(400).json({
+      message: "Mês inválido",
+    });
+  }
+
+  const inicioDoMes = new Date(Date.UTC(ano, mes - 1, 1));
+  const inicioDoMesSeguinte = new Date(Date.UTC(ano, mes, 1));
+
+  try {
+    const [listaDespesas, listaReceitas] = await Promise.all([
+      expense
+        .find({
+          userId,
+          data: {
+            $gte: inicioDoMes,
+            $lt: inicioDoMesSeguinte,
+          },
+        })
+        .lean(),
+
+      receitas
+        .find({
+          userId,
+          data: {
+            $gte: inicioDoMes,
+            $lt: inicioDoMesSeguinte,
+          },
+        })
+        .lean(),
+    ]);
+
+    const totalDespesas = listaDespesas.reduce(
+      (total, despesa) => total + despesa.valor,
+      0,
+    );
+
+    const totalReceitas = listaReceitas.reduce(
+      (total, receita) => total + receita.valor,
+      0,
+    );
+
+    const saldo = totalReceitas - totalDespesas;
+
+    return res.status(200).json({
+      mes: mesSelecionado,
+      totalDespesas,
+      totalReceitas,
+      saldo,
+    });
+  } catch (erro) {
+    console.error(erro);
+
+    return res.status(500).json({
+      message: "Erro ao calcular resumo",
+    });
+  }
+
 })
 // Database
 await ligarBaseDados();

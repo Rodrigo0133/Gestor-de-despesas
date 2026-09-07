@@ -5,7 +5,6 @@ import {
   expense,
   categorias,
   receitas,
-  categorias,
 } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";

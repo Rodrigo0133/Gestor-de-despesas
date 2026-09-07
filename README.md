@@ -1,75 +1,123 @@
-# React + TypeScript + Vite
+# Gestor de Despesas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para registar e acompanhar despesas, receitas e categorias de cada utilizador.
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Registo, autenticação e encerramento de sessão
+- Gestão de despesas e receitas
+- Gestão de categorias personalizadas
+- Consulta do histórico de movimentos
+- Resumo financeiro mensal e anual
+- Evolução de despesas, receitas e saldo por mês
+- Resumo de despesas por categoria
 
-## React Compiler
+## Tecnologias utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the ESLint configuration
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Backend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js
+- Express
+- MongoDB e Mongoose
+- Sessões e cookies com `express-session`
+- Argon2 para proteção das palavras-passe
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Requisitos
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js instalado
+- Uma base de dados MongoDB local ou no MongoDB Atlas
 
+## Instalação
+
+Instala as dependências do projeto:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Cria um ficheiro `.env` na raiz do projeto a partir do `.env.example`:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```env
+MONGODB_URI=mongodb://localhost:27017/gestor-despesas
+PORT=3000
+SESSION_SECRET=coloca_aqui_um_segredo
 ```
+
+Podes gerar um valor seguro para `SESSION_SECRET` com:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Guarda o resultado apenas no ficheiro `.env`. Não publiques esse ficheiro no GitHub.
+
+## Executar o projeto
+
+Abre dois terminais. No primeiro, inicia o frontend:
+
+```bash
+npm run dev
+```
+
+No segundo, compila e inicia o backend:
+
+```bash
+npm run compile:ts
+npm start
+```
+
+Por predefinição, o frontend fica disponível em `http://localhost:5173` e a API em `http://localhost:3000`.
+
+## Rotas da API
+
+| Método | Rota | Função |
+| --- | --- | --- |
+| POST | `/registrar` | Criar um utilizador |
+| POST | `/login` | Iniciar sessão |
+| POST | `/logout` | Terminar sessão |
+| GET | `/auth` | Consultar o utilizador autenticado |
+| GET | `/movimentos` | Listar despesas e receitas |
+| GET | `/movimentos/:id` | Consultar um movimento |
+| POST | `/novadespesa` | Criar uma despesa |
+| PATCH | `/despesas/:id` | Atualizar uma despesa |
+| DELETE | `/despesas/:id` | Eliminar uma despesa |
+| POST | `/receita` | Criar uma receita |
+| PATCH | `/receitas/:id` | Atualizar uma receita |
+| DELETE | `/receita/:id` | Eliminar uma receita |
+| GET | `/categorias` | Listar categorias |
+| GET | `/categorias/:id` | Consultar uma categoria |
+| POST | `/categoria` | Criar uma categoria |
+| PATCH | `/categorias/:id` | Atualizar uma categoria |
+| DELETE | `/categoria/:id` | Eliminar uma categoria |
+| GET | `/resumo?ano=2026` | Obter o resumo anual |
+| GET | `/resumo?mes=2026-09` | Obter o resumo mensal |
+| GET | `/resumo/evolucao?ano=2026` | Obter a evolução mensal de um ano |
+| GET | `/resumo/categorias?ano=2026` | Obter despesas agrupadas por categoria |
+
+As rotas protegidas exigem uma sessão iniciada. O frontend deve enviar os cookies nos pedidos à API.
+
+## Conhecimentos adquiridos
+
+- Criação de uma API com Express e TypeScript
+- Integração de uma API com React
+- Registo e autenticação de utilizadores
+- Gestão de sessões e cookies
+- Operações de atualização e eliminação
+- Ligação e consultas a uma base de dados MongoDB
+- Configuração de CORS entre frontend e backend
+
+## Melhorias futuras
+
+- Concluir e melhorar a interface do frontend
+- Adicionar filtros e pesquisa ao histórico de movimentos
+- Exportar o resumo mensal para Excel
+- Adicionar testes à API
+- Preparar a aplicação para publicação

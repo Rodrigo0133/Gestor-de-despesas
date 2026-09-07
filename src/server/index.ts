@@ -1,5 +1,12 @@
 import express from "express";
-import { ligarBaseDados, User, expense, categorias , receitas } from "./database/db.js";
+import {
+  ligarBaseDados,
+  User,
+  expense,
+  categorias,
+  receitas,
+  categorias,
+} from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
 import "dotenv/config";
@@ -18,7 +25,10 @@ function converterDataDoUtilizador(valor: unknown): Date | null {
 
   const data = new Date(`${valor}T00:00:00.000Z`);
 
-  if (Number.isNaN(data.getTime()) || data.toISOString().slice(0, 10) !== valor) {
+  if (
+    Number.isNaN(data.getTime()) ||
+    data.toISOString().slice(0, 10) !== valor
+  ) {
     return null;
   }
 
@@ -170,18 +180,18 @@ app.get("/movimentos", async (req, res) => {
     });
   }
 });
-app.delete("/despesas/:id", async (req,res) => {
-  const userId = req.session.userId
+app.delete("/despesas/:id", async (req, res) => {
+  const userId = req.session.userId;
   const despesaId = req.params.id;
-  if(!userId){
+  if (!userId) {
     return res.status(401).json({
-      message: "Precisas ter uma conta logada!"
-    })
+      message: "Precisas ter uma conta logada!",
+    });
   }
-  if(!despesaId){
+  if (!despesaId) {
     return res.status(401).json({
-      message: "Precisas ter uma despesa"
-    })
+      message: "Precisas ter uma despesa",
+    });
   }
   if (!isValidObjectId(despesaId)) {
     return res.status(400).json({
@@ -190,23 +200,23 @@ app.delete("/despesas/:id", async (req,res) => {
   }
   const despesaEliminada = await expense.findOneAndDelete({
     _id: despesaId,
-    userId
-  })
-  if(!despesaEliminada){
+    userId,
+  });
+  if (!despesaEliminada) {
     return res.status(404).json({
-      message: "Despesa não encontrada"
-    })
+      message: "Despesa não encontrada",
+    });
   }
   return res.status(200).json({
-    message: "Despesa Elimanda!"    
-  })
-})
-app.post("/receita", async (req,res) => {
-  const userId = req.session.userId
-  if(!userId){
+    message: "Despesa Elimanda!",
+  });
+});
+app.post("/receita", async (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) {
     return res.status(401).json({
-      message: "Precisas ter uma conta logada!"
-    })
+      message: "Precisas ter uma conta logada!",
+    });
   }
   const { descricao, valor, data, categoria } = req.body;
   if (!descricao || !valor || !data || !categoria) {
@@ -242,7 +252,7 @@ app.post("/receita", async (req,res) => {
   }
   const categoriaExistente = await categorias.findOne({
     _id: categoria,
-    userId
+    userId,
   });
 
   if (!categoriaExistente) {
@@ -256,7 +266,7 @@ app.post("/receita", async (req,res) => {
       valor,
       data: dataDoMovimento,
       categoria,
-      userId: userId
+      userId: userId,
     });
     return res.status(201).json({
       message: "Despesa Adicionada",
@@ -268,19 +278,19 @@ app.post("/receita", async (req,res) => {
       message: "Erro ao guardar despesa!",
     });
   }
-})
-app.delete("/receita/:id", async (req,res) => {
-  const userId = req.session.userId
+});
+app.delete("/receita/:id", async (req, res) => {
+  const userId = req.session.userId;
   const receitaId = req.params.id;
-  if(!userId){
+  if (!userId) {
     return res.status(401).json({
-      message: "Precisas ter uma conta logada!"
-    })
+      message: "Precisas ter uma conta logada!",
+    });
   }
-  if(!receitaId){
+  if (!receitaId) {
     return res.status(401).json({
-      message: "Precisas ter uma despesa"
-    })
+      message: "Precisas ter uma despesa",
+    });
   }
   if (!isValidObjectId(receitaId)) {
     return res.status(400).json({
@@ -289,17 +299,17 @@ app.delete("/receita/:id", async (req,res) => {
   }
   const receitaEliminada = await receitas.findOneAndDelete({
     _id: receitaId,
-    userId
-  })
-  if(!receitaEliminada){
+    userId,
+  });
+  if (!receitaEliminada) {
     return res.status(404).json({
-      message: "Despesa não encontrada"
-    })
+      message: "Despesa não encontrada",
+    });
   }
   return res.status(200).json({
-    message: "Despesa Elimanda!"    
-  })
-})
+    message: "Despesa Elimanda!",
+  });
+});
 app.post("/login", async (req, res) => {
   const { pesquisa, senha } = req.body;
 
@@ -358,59 +368,59 @@ app.post("/login", async (req, res) => {
     });
   });
 });
-app.post("/categoria",async (req,res) => {
+app.post("/categoria", async (req, res) => {
   const { nome, cor } = req.body;
-  const userId = req.session.userId
-  if(!nome || !cor){
+  const userId = req.session.userId;
+  if (!nome || !cor) {
     return res.status(400).json({
-      message: "Dados Invalidos!"
-    })
+      message: "Dados Invalidos!",
+    });
   }
-  if(!userId){
+  if (!userId) {
     return res.status(401).json({
-      message: "Precisa ter Login feito!"
-    })
+      message: "Precisa ter Login feito!",
+    });
   }
   const NovaCategoria = await categorias.create({
     nome,
     cor,
     userId: userId,
-  })
-  if(!NovaCategoria){
+  });
+  if (!NovaCategoria) {
     return res.status(500).json({
-      message: "Falha em guardar categoria na base de dados"
-    })
+      message: "Falha em guardar categoria na base de dados",
+    });
   }
   return res.status(201).json({
-    message: "Categoria Criada!"
-  })
-})
-app.delete("/categoria/:id", async (req,res) => {
-  const userId = req.session.userId
-  const id = req.params.id
-  if(!userId){
+    message: "Categoria Criada!",
+  });
+});
+app.delete("/categoria/:id", async (req, res) => {
+  const userId = req.session.userId;
+  const id = req.params.id;
+  if (!userId) {
     return res.status(401).json({
-      message: "Precisa ter login"
-    })
+      message: "Precisa ter login",
+    });
   }
-  if(!id){
+  if (!id) {
     return res.status(400).json({
-      message: "Dado invalido"
-    })
+      message: "Dado invalido",
+    });
   }
   const removercategoria = await categorias.findByIdAndDelete({
     id,
-    userId: userId
-  })
-  if(!removercategoria){
+    userId: userId,
+  });
+  if (!removercategoria) {
     return res.status(404).json({
-      message: "erro!"
-    })
+      message: "erro!",
+    });
   }
   return res.status(200).json({
-    message: "Categoria Removida"
-  })
-})
+    message: "Categoria Removida",
+  });
+});
 app.post("/registrar", async (req, res) => {
   const { nome, email, senha } = req.body;
   if (!nome || !email || !senha) {
@@ -503,61 +513,91 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get("/categorias", async (req,res) => {
-  const UserId = req.session.userId
-  if(!UserId){
+app.get("/categorias", async (req, res) => {
+  const UserId = req.session.userId;
+  if (!UserId) {
     return res.status(400).json({
-      message: "Precisa de ter uma conta logada!"
-    })
+      message: "Precisa de ter uma conta logada!",
+    });
   }
-  try{
-    const utilizador = await categorias.findOne({
+  try {
+    const utilizador = await categorias.find({
       userId: UserId,
-    })
+    });
     return res.status(201).json({
       utilizador,
-    })
-  }catch(err){
+    });
+  } catch (err) {
     console.log(err);
     return res.status(404).json({
       message: "erro na base de dados!",
-    })
+    });
   }
-})
-
-app.patch("/categorias/:id", async (req,res) => {
-  const UserId = req.session.userId
-  const id = req.params.id
-  const {nome, cor} = req.body;
-  if(!UserId){
+});
+app.get("/categorias/:id", async (req, res) => {
+  const UserId = req.session.userId;
+  const id = req.params.id;
+  if (!UserId) {
+    return res.status(401).json({
+      message: "Precisas estar logado",
+    });
+  }
+  if (!id || !isValidObjectId(id)) {
     return res.status(400).json({
-      message: "Precisa de ter uma conta logada!"
-    })
+      message: "Precisas de indicar a categoria",
+    });
   }
-  if(!id || !nome || !cor){
-    return res.status(400).json({
-      message: "erro nos dados!"
-    })
-  }
-  try{
-    const categoria = await categorias.findByIdAndUpdate({
-      UserId,
-      id,
-    },{
-      nome,
-      cor
-    })
+  try {
+    const categoria = await categorias.findOne({
+      _id: id,
+      userId: UserId,
+    });
     return res.status(200).json({
-    message: "Categoria atualizada!",
-    categoria,
-    })
-  }catch(err){
-    console.log(err)
+      categoria,
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(404).json({
-      message: "erro ao encontrar a categoria!"
-    })
+      message: "erro na base de dados!",
+    });
   }
-})
+});
+app.patch("/categorias/:id", async (req, res) => {
+  const UserId = req.session.userId;
+  const id = req.params.id;
+  const { nome, cor } = req.body;
+  if (!UserId) {
+    return res.status(400).json({
+      message: "Precisa de ter uma conta logada!",
+    });
+  }
+  if (!id || !isValidObjectId(id) || !nome || !cor) {
+    return res.status(400).json({
+      message: "erro nos dados!",
+    });
+  }
+  try {
+    const categoria = await categorias.findByIdAndUpdate(
+      {
+        _id: id,
+        userId: UserId,
+      },
+      {
+        nome,
+        cor,
+      },
+    );
+    return res.status(200).json({
+      message: "Categoria atualizada!",
+      categoria,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(404).json({
+      message: "erro ao encontrar a categoria!",
+    });
+  }
+});
 app.get("/movimentos/:id", async (req, res) => {
   const userId = req.session.userId;
   const movimentoId = req.params.id;
@@ -576,15 +616,19 @@ app.get("/movimentos/:id", async (req, res) => {
 
   try {
     const [despesa, receita] = await Promise.all([
-      expense.findOne({
-        _id: movimentoId,
-        userId,
-      }).lean(),
+      expense
+        .findOne({
+          _id: movimentoId,
+          userId,
+        })
+        .lean(),
 
-      receitas.findOne({
-        _id: movimentoId,
-        userId,
-      }).lean(),
+      receitas
+        .findOne({
+          _id: movimentoId,
+          userId,
+        })
+        .lean(),
     ]);
 
     if (despesa) {
@@ -616,10 +660,158 @@ app.get("/movimentos/:id", async (req, res) => {
     });
   }
 });
-app.patch("/despesas/:id", async (req,res ) => {
+app.get("/resumo/categorias", async (req, res) => {
+  const userId = req.session.userId;
+  const anoSelecionado = req.query.ano;
+
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+  if (
+    !anoSelecionado ||
+    typeof anoSelecionado !== "string" ||
+    !/^\d{4}$/.test(anoSelecionado)
+  ) {
+    return res.status(400).json({
+      message: "Ano selecionado inválido",
+    });
+  }
+  const ano = Number(anoSelecionado);
+  const inicioDoAno = new Date(Date.UTC(ano, 0, 1));
+  const inicioDoAnoSeguinte = new Date(Date.UTC(ano + 1, 0, 1));
+  try {
+    const despesas = await expense
+      .find({
+        userId,
+        data: {
+          $gte: inicioDoAno,
+          $lt: inicioDoAnoSeguinte,
+        },
+      })
+      .populate({
+        path: "categoria",
+        select: "nome cor",
+        match: { userId },
+      })
+      .lean();
+    const categoriasAgrupadas: Record<
+      string,
+      {
+        id: string;
+        nome: string;
+        cor: string;
+        total: number;
+      }
+    > = {};
+    for (const despesa of despesas) {
+      const categoria = despesa.categoria as unknown as {
+        _id: unknown;
+        nome: string;
+        cor: string;
+      } | null;
+
+      if (!categoria) {
+        continue;
+      }
+
+      const categoriaId = String(categoria._id);
+
+      if (!categoriasAgrupadas[categoriaId]) {
+        categoriasAgrupadas[categoriaId] = {
+          id: categoriaId,
+          nome: categoria.nome,
+          cor: categoria.cor,
+          total: 0,
+        };
+      }
+
+      categoriasAgrupadas[categoriaId].total += despesa.valor;
+    }
+    const resumoCategorias = Object.values(categoriasAgrupadas);
+    return res.status(200).json({
+      ano: anoSelecionado,
+      categorias: resumoCategorias,
+    });
+  } catch (erro) {
+    console.error(erro);
+    return res.status(500).json({
+      message: "Erro ao calcular evolução",
+    });
+  }
+});
+app.get("/resumo/evolucao", async (req, res) => {
+  const userId = req.session.userId;
+  const anoSelecionado = req.query.ano;
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+  if (
+    !anoSelecionado ||
+    typeof anoSelecionado !== "string" ||
+    !/^\d{4}$/.test(anoSelecionado)
+  ) {
+    return res.status(400).json({
+      message: "Ano selecionado inválido",
+    });
+  }
+  const ano = Number(anoSelecionado);
+  const inicioDoAno = new Date(Date.UTC(ano, 0, 1));
+  const inicioDoAnoSeguinte = new Date(Date.UTC(ano + 1, 0, 1));
+  try {
+    const [listaDespesas, listaReceitas] = await Promise.all([
+      expense
+        .find({
+          userId,
+          data: {
+            $gte: inicioDoAno,
+            $lt: inicioDoAnoSeguinte,
+          },
+        })
+        .lean(),
+      receitas
+        .find({
+          userId,
+          data: {
+            $gte: inicioDoAno,
+            $lt: inicioDoAnoSeguinte,
+          },
+        })
+        .lean(),
+    ]);
+    const despesasPorMes = Array(12).fill(0);
+    const receitasPorMes = Array(12).fill(0);
+    for (const despesa of listaDespesas) {
+      const mes = despesa.data.getUTCMonth();
+      despesasPorMes[mes] += despesa.valor;
+    }
+    for (const receita of listaReceitas) {
+      const mes = receita.data.getUTCMonth();
+      receitasPorMes[mes] += receita.valor;
+    }
+    const saldoPorMes: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      saldoPorMes[i] = receitasPorMes[i] - despesasPorMes[i];
+    }
+    return res.status(200).json({
+      despesasPorMes,
+      receitasPorMes,
+      saldoPorMes,
+    });
+  } catch (erro) {
+    console.error(erro);
+    return res.status(500).json({
+      message: "Erro ao calcular evolução",
+    });
+  }
+});
+app.patch("/despesas/:id", async (req, res) => {
   const userId = req.session.userId;
   const despesaid = req.params.id;
-  const {descricao, valor,data,categoria} = req.body
+  const { descricao, valor, data, categoria } = req.body;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
@@ -631,36 +823,39 @@ app.patch("/despesas/:id", async (req,res ) => {
       message: "ID do movimento inválido",
     });
   }
-  if(!descricao || !valor || !data|| !categoria){
+  if (!descricao || !valor || !data || !categoria) {
     return res.status(400).json({
       message: "falta de valores",
     });
   }
-  try{
-    const DespesaAtualizada = await expense.findByIdAndUpdate({
-      userId: userId,
-      id: despesaid
-    },{
-      descricao,
-      valor,
-      data,
-      categoria,
-    })
+  try {
+    const DespesaAtualizada = await expense.findOneAndUpdate(
+      {
+        userId: userId,
+        _id: despesaid,
+      },
+      {
+        descricao,
+        valor,
+        data,
+        categoria,
+      },
+    );
     return res.status(201).json({
       message: "despesa atualizada",
       DespesaAtualizada,
-    })
-  }catch(err){
-    console.log(err)
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message: "Erro ao procurar movimento",
     });
   }
-})
-app.patch("/receitas/:id", async (req,res ) => {
+});
+app.patch("/receitas/:id", async (req, res) => {
   const userId = req.session.userId;
   const receitasid = req.params.id;
-  const {descricao, valor,data,categoria} = req.body
+  const { descricao, valor, data, categoria } = req.body;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
@@ -672,112 +867,180 @@ app.patch("/receitas/:id", async (req,res ) => {
       message: "ID do movimento inválido",
     });
   }
-  if(!descricao || !valor || !data|| !categoria){
+  if (!descricao || !valor || !data || !categoria) {
     return res.status(400).json({
       message: "falta de valores",
     });
   }
-  try{
-    const ReceitaAtualizada = await receitas.findByIdAndUpdate({
-      userId: userId,
-      id: receitasid
-    },{
-      descricao,
-      valor,
-      data,
-      categoria,
-    })
+  try {
+    const ReceitaAtualizada = await receitas.findOneAndUpdate(
+      {
+        userId: userId,
+        _id: receitasid,
+      },
+      {
+        descricao,
+        valor,
+        data,
+        categoria,
+      },
+    );
     return res.status(201).json({
-      message: "despesa atualizada",
+      message: "receita atualizada",
       ReceitaAtualizada,
-    })
-  }catch(err){
-    console.log(err)
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({
       message: "Erro ao procurar movimento",
     });
   }
-})
-app.get("/resumo", async (req,res) => {
+});
+app.get("/resumo", async (req, res) => {
   const userId = req.session.userId;
   const mesSelecionado = req.query.mes;
-
+  const anoSelecionado = req.query.ano;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
     });
   }
-
-  if (
-    typeof mesSelecionado !== "string" ||
-    !/^\d{4}-\d{2}$/.test(mesSelecionado)
-  ) {
+  if (mesSelecionado && anoSelecionado) {
     return res.status(400).json({
-      message: "Usa o formato AAAA-MM",
+      message: "Indica apenas mes ou ano",
     });
   }
+  if (typeof mesSelecionado === "string") {
+    if (!/^\d{4}-\d{2}$/.test(mesSelecionado)) {
+      return res.status(400).json({
+        message: "Usa o formato AAAA-MM",
+      });
+    }
+    if (!/^\d{4}-\d{2}$/.test(mesSelecionado)) {
+      return res.status(400).json({
+        message: "Usa o formato AAAA-MM",
+      });
+    }
+    const [ano, mes] = mesSelecionado.split("-").map(Number);
 
-  const [ano, mes] = mesSelecionado.split("-").map(Number);
+    if (mes < 1 || mes > 12) {
+      return res.status(400).json({
+        message: "Mês inválido",
+      });
+    }
 
-  if (mes < 1 || mes > 12) {
+    const inicioDoMes = new Date(Date.UTC(ano, mes - 1, 1));
+    const inicioDoMesSeguinte = new Date(Date.UTC(ano, mes, 1));
+
+    try {
+      const [listaDespesas, listaReceitas] = await Promise.all([
+        expense
+          .find({
+            userId,
+            data: {
+              $gte: inicioDoMes,
+              $lt: inicioDoMesSeguinte,
+            },
+          })
+          .lean(),
+
+        receitas
+          .find({
+            userId,
+            data: {
+              $gte: inicioDoMes,
+              $lt: inicioDoMesSeguinte,
+            },
+          })
+          .lean(),
+      ]);
+
+      const totalDespesas = listaDespesas.reduce(
+        (total, despesa) => total + despesa.valor,
+        0,
+      );
+
+      const totalReceitas = listaReceitas.reduce(
+        (total, receita) => total + receita.valor,
+        0,
+      );
+
+      const saldo = totalReceitas - totalDespesas;
+
+      return res.status(200).json({
+        mes: mesSelecionado,
+        totalDespesas,
+        totalReceitas,
+        saldo,
+      });
+    } catch (erro) {
+      console.error(erro);
+
+      return res.status(500).json({
+        message: "Erro ao calcular resumo",
+      });
+    }
+  } else if (typeof anoSelecionado === "string") {
+    if (!/^\d{4}$/.test(anoSelecionado)) {
+      return res.status(400).json({
+        message: "Usa o formato AAAA",
+      });
+    }
+    const ano = Number(anoSelecionado);
+    const inicioDoAno = new Date(Date.UTC(ano, 0, 1));
+    const inicioDoAnoSeguinte = new Date(Date.UTC(ano + 1, 0, 1));
+    try {
+      const [listaDespesas, listaReceitas] = await Promise.all([
+        expense
+          .find({
+            userId,
+            data: {
+              $gte: inicioDoAno,
+              $lt: inicioDoAnoSeguinte,
+            },
+          })
+          .lean(),
+
+        receitas
+          .find({
+            userId,
+            data: {
+              $gte: inicioDoAno,
+              $lt: inicioDoAnoSeguinte,
+            },
+          })
+          .lean(),
+      ]);
+      const totalDespesas = listaDespesas.reduce(
+        (total, despesa) => total + despesa.valor,
+        0,
+      );
+
+      const totalReceitas = listaReceitas.reduce(
+        (total, receita) => total + receita.valor,
+        0,
+      );
+
+      const saldo = totalReceitas - totalDespesas;
+      return res.status(200).json({
+        ano: anoSelecionado,
+        totalDespesas,
+        totalReceitas,
+        saldo,
+      });
+    } catch (erro) {
+      console.error(erro);
+
+      return res.status(500).json({
+        message: "Erro ao calcular resumo",
+      });
+    }
+  } else {
     return res.status(400).json({
-      message: "Mês inválido",
+      message: "Indica mes ou ano",
     });
   }
-
-  const inicioDoMes = new Date(Date.UTC(ano, mes - 1, 1));
-  const inicioDoMesSeguinte = new Date(Date.UTC(ano, mes, 1));
-
-  try {
-    const [listaDespesas, listaReceitas] = await Promise.all([
-      expense
-        .find({
-          userId,
-          data: {
-            $gte: inicioDoMes,
-            $lt: inicioDoMesSeguinte,
-          },
-        })
-        .lean(),
-
-      receitas
-        .find({
-          userId,
-          data: {
-            $gte: inicioDoMes,
-            $lt: inicioDoMesSeguinte,
-          },
-        })
-        .lean(),
-    ]);
-
-    const totalDespesas = listaDespesas.reduce(
-      (total, despesa) => total + despesa.valor,
-      0,
-    );
-
-    const totalReceitas = listaReceitas.reduce(
-      (total, receita) => total + receita.valor,
-      0,
-    );
-
-    const saldo = totalReceitas - totalDespesas;
-
-    return res.status(200).json({
-      mes: mesSelecionado,
-      totalDespesas,
-      totalReceitas,
-      saldo,
-    });
-  } catch (erro) {
-    console.error(erro);
-
-    return res.status(500).json({
-      message: "Erro ao calcular resumo",
-    });
-  }
-
-})
+});
 // Database
 await ligarBaseDados();
 

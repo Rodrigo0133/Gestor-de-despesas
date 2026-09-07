@@ -662,7 +662,126 @@ app.get("/movimentos/:id", async (req, res) => {
 app.get("/resumo/categorias", async (req, res) => {
   const userId = req.session.userId;
   const anoSelecionado = req.query.ano;
+  const mesSelecionado = req.query.mes;
 
+  if (!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+
+  if (anoSelecionado && mesSelecionado) {
+    return res.status(400).json({
+      message: "Indica apenas mes ou ano",
+    });
+  }
+
+  let inicio: Date;
+  let fim: Date;
+  let periodo: { ano?: string; mes?: string };
+
+  if (typeof mesSelecionado === "string") {
+    if (!/^\d{4}-\d{2}$/.test(mesSelecionado)) {
+      return res.status(400).json({
+        message: "Mes invalido. Usa o formato AAAA-MM",
+      });
+    }
+
+    const [ano, mes] = mesSelecionado.split("-").map(Number);
+    if (mes < 1 || mes > 12) {
+      return res.status(400).json({
+        message: "Mes invalido",
+      });
+    }
+
+    inicio = new Date(Date.UTC(ano, mes - 1, 1));
+    fim = new Date(Date.UTC(ano, mes, 1));
+    periodo = { mes: mesSelecionado };
+  } else if (typeof anoSelecionado === "string") {
+    if (!/^\d{4}$/.test(anoSelecionado)) {
+      return res.status(400).json({
+        message: "Ano invalido. Usa o formato AAAA",
+      });
+    }
+
+    const ano = Number(anoSelecionado);
+    inicio = new Date(Date.UTC(ano, 0, 1));
+    fim = new Date(Date.UTC(ano + 1, 0, 1));
+    periodo = { ano: anoSelecionado };
+  } else {
+    return res.status(400).json({
+      message: "Indica mes ou ano",
+    });
+  }
+
+  try {
+    const despesas = await expense
+      .find({
+        userId,
+        data: {
+          $gte: inicio,
+          $lt: fim,
+        },
+      })
+      .populate({
+        path: "categoria",
+        select: "nome cor",
+        match: { userId },
+      })
+      .lean();
+
+    const categoriasAgrupadas: Record<
+      string,
+      { id: string; nome: string; cor: string; total: number }
+    > = {};
+
+    for (const despesa of despesas) {
+      const categoria = despesa.categoria as unknown as {
+        _id: unknown;
+        nome: string;
+        cor: string;
+      } | null;
+
+      if (!categoria) continue;
+
+      const categoriaId = String(categoria._id);
+      categoriasAgrupadas[categoriaId] ??= {
+        id: categoriaId,
+        nome: categoria.nome,
+        cor: categoria.cor,
+        total: 0,
+      };
+      categoriasAgrupadas[categoriaId].total += despesa.valor;
+    }
+
+    const categoriasDoPeriodo = Object.values(categoriasAgrupadas);
+    const totalDespesas = categoriasDoPeriodo.reduce(
+      (total, categoria) => total + categoria.total,
+      0,
+    );
+
+    return res.status(200).json({
+      ...periodo,
+      totalDespesas,
+      categorias: categoriasDoPeriodo.map((categoria) => ({
+        ...categoria,
+        percentagem:
+          totalDespesas === 0
+            ? 0
+            : Number(((categoria.total / totalDespesas) * 100).toFixed(2)),
+      })),
+    });
+  } catch (erro) {
+    console.error(erro);
+    return res.status(500).json({
+      message: "Erro ao calcular resumo por categoria",
+    });
+  }
+});
+app.get("/resumo/categorias-antigo", async (req, res) => {
+  const userId = req.session.userId;
+  const anoSelecionado = req.query.ano;
+  const mesSelecionado = req.query.mes;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
@@ -1040,6 +1159,17 @@ app.get("/resumo", async (req, res) => {
     });
   }
 });
+app.get("/dashboard", async (req, res) => {
+  const userId = req.session.userId;
+  if(!userId) {
+    return res.status(401).json({
+      message: "Precisas de iniciar sessão",
+    });
+  }
+  try{
+    const Utilizador = await User.findById(userId);
+  }
+})
 // Database
 await ligarBaseDados();
 

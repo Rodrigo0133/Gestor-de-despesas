@@ -100,7 +100,7 @@ Por predefinição, o frontend fica disponível em `http://localhost:5173` e a A
 | GET | `/resumo?ano=2026` | Obter o resumo anual |
 | GET | `/resumo?mes=2026-09` | Obter o resumo mensal |
 | GET | `/resumo/evolucao?ano=2026` | Obter a evolução mensal de um ano |
-| GET | `/resumo/categorias?ano=2026` | Obter despesas agrupadas por categoria |
+| GET | `/resumo/categorias?ano=2026` ou `/resumo/categorias?mes=2026-09` | Obter despesas agrupadas por categoria |
 
 As rotas protegidas exigem uma sessão iniciada. O frontend deve enviar os cookies nos pedidos à API.
 

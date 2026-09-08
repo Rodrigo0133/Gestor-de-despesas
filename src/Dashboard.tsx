@@ -80,15 +80,12 @@ const movimentosRecentes = [
   },
 ];
 
-const totalDespesas = categorias.reduce(
-  (total, categoria) => total + categoria.valor,
-  0,
-);
+
 
 
 function AbrirDespesas(navigate: ReturnType<typeof useNavigate>): void {
   console.log("Abrindo página de despesas...");
-  navigate("/Dashboard/Despesas");
+  navigate("/dashboard/despesas");
 }
 
 
@@ -104,6 +101,10 @@ function Dashboard() {
   const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [dia, setDia] = useState("");
+  const [totalDespesas, setTotalDespesas] = useState(0);
+  const [totalReceitas, setTotalReceitas] = useState(0);
+  const [totalSaldo, setTotalSaldo] = useState(0);
+  const [mesSelecionado, setMesSelecionado] = useState("2026-09");
 
   const sair = async () => {
     const resposta = await fetch("http://localhost:3000/logout", {
@@ -134,6 +135,30 @@ function Dashboard() {
 
         const resultado = await resposta_id.json();
         setNome(resultado.utilizador.nome);
+        
+      } catch {
+        alert("Não foi possível contactar o servidor.");
+      }
+    };
+    const carregarDashboard = async () => {
+      try {
+        const resposta = await fetch(`http://localhost:3000/dashboard?mes=${mesSelecionado}`, {
+          credentials: "include",
+          method: "GET",
+        });
+        const resultado = await resposta.json();
+        if (resposta.status === 401) {
+          navigate("/login");
+          return;
+        }
+        if (!resposta.ok) {
+          throw new Error(resultado.message ?? "Erro ao carregar dashboard");
+        }
+        setNome(resultado.Utilizador.nome);
+        setTotalDespesas(resultado.resumo.totalDespesas);
+        setTotalReceitas(resultado.resumo.totalReceitas);
+        setTotalSaldo(resultado.resumo.saldo);
+        
       } catch {
         alert("Não foi possível contactar o servidor.");
       }
@@ -153,7 +178,8 @@ function Dashboard() {
 
     VerificarHoras();
     verificarUsuario();
-  }, [navigate]);
+    carregarDashboard();
+  }, [navigate, mesSelecionado]);
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
@@ -185,7 +211,7 @@ function Dashboard() {
                   className="pointer-events-none absolute left-3 text-slate-500"
                 />
 
-                <select className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/20 hover:cursor-pointer">
+                <select value={mesSelecionado} onChange={(event) => setMesSelecionado(event.target.value)} className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/20 hover:cursor-pointer">
                   <option value="2024-05">Maio de 2024</option>
                   <option value="2024-04">Abril de 2024</option>
                   <option value="2024-03">Março de 2024</option>
@@ -210,7 +236,7 @@ function Dashboard() {
                   Saldo total
                 </p>
                 <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-                  1 250,45 €
+                  {formatarMoeda.format(totalSaldo)}
                 </p>
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-green-700">+12,4%</span>
@@ -230,7 +256,7 @@ function Dashboard() {
               <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-700">Receitas</p>
                 <p className="mt-2 text-2xl font-bold tracking-tight text-green-700">
-                  2 850,00 €
+                  {formatarMoeda.format(totalReceitas)}
                 </p>
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-green-700">+8,7%</span>
@@ -250,7 +276,7 @@ function Dashboard() {
               <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-700">Despesas</p>
                 <p className="mt-2 text-2xl font-bold tracking-tight text-red-700">
-                  1 599,55 €
+                  {formatarMoeda.format(totalDespesas)}
                 </p>
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-red-700">−3,2%</span>

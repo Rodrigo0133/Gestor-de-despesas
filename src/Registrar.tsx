@@ -27,7 +27,7 @@ function Registrar() {
 
     if (resposta.ok) {
       const dados2 = {
-        nome,
+        pesquisa: nome,
         senha
       }
       const resposta = await fetch("http://localhost:3000/login", {
@@ -58,14 +58,16 @@ function Registrar() {
     
             
     
+            if (resposta_id.status === 401) {
+              return;
+            }
+
             if (!resposta_id.ok) {
               throw new Error("Erro ao verificar sessão");
             }else{
               navigate("/dashboard")
             }
     
-            const resultado = await resposta_id.json();
-            setNome(resultado.utilizador.nome);
           } catch {
             alert("Não foi possível contactar o servidor.");
           }

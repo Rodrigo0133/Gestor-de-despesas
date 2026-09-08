@@ -5,7 +5,6 @@ import {
   expense,
   categorias,
   receitas,
-  receitas,
 } from "./database/db.js";
 import argon2 from "argon2";
 import cors from "cors";
@@ -782,7 +781,6 @@ app.get("/resumo/categorias", async (req, res) => {
 app.get("/resumo/categorias-antigo", async (req, res) => {
   const userId = req.session.userId;
   const anoSelecionado = req.query.ano;
-  const mesSelecionado = req.query.mes;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",

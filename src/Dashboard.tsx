@@ -1,19 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  BriefcaseBusiness,
   CalendarDays,
   ChevronDown,
   ChevronRight,
   CirclePlus,
-  Clapperboard,
-  Fuel,
-  House,
   LogOut,
-  ShoppingCart,
   TrendingDown,
   TrendingUp,
-  Utensils,
   Wallet,
 } from "lucide-react";
 
@@ -22,81 +16,29 @@ const formatarMoeda = new Intl.NumberFormat("pt-PT", {
   currency: "EUR",
 });
 
-const categorias = [
-  { nome: "Alimentação", valor: 607.3, percentagem: 38, cor: "#ef4444" },
-  { nome: "Transporte", valor: 399.65, percentagem: 25, cor: "#3b82f6" },
-  { nome: "Casa", valor: 319.9, percentagem: 20, cor: "#7c6ee6" },
-  { nome: "Lazer", valor: 272.7, percentagem: 17, cor: "#2fb5aa" },
-];
-
-const movimentosRecentes = [
-  {
-    data: "24/05/2024",
-    descricao: "Supermercado Continente",
-    categoria: "Alimentação",
-    valor: -85.64,
-    Icone: ShoppingCart,
-    estilo: "bg-red-50 text-red-500",
-  },
-  {
-    data: "23/05/2024",
-    descricao: "Repsol",
-    categoria: "Transporte",
-    valor: -52.1,
-    Icone: Fuel,
-    estilo: "bg-blue-50 text-blue-600",
-  },
-  {
-    data: "22/05/2024",
-    descricao: "Salário",
-    categoria: "Receitas",
-    valor: 2850,
-    Icone: BriefcaseBusiness,
-    estilo: "bg-green-50 text-green-700",
-  },
-  {
-    data: "21/05/2024",
-    descricao: "Renda de casa",
-    categoria: "Casa",
-    valor: -750,
-    Icone: House,
-    estilo: "bg-violet-50 text-violet-600",
-  },
-  {
-    data: "19/05/2024",
-    descricao: "Cinema",
-    categoria: "Lazer",
-    valor: -23.4,
-    Icone: Clapperboard,
-    estilo: "bg-teal-50 text-teal-600",
-  },
-  {
-    data: "18/05/2024",
-    descricao: "Restaurante",
-    categoria: "Alimentação",
-    valor: -28.75,
-    Icone: Utensils,
-    estilo: "bg-red-50 text-red-500",
-  },
-];
-
-
-
-
 function AbrirDespesas(navigate: ReturnType<typeof useNavigate>): void {
   console.log("Abrindo página de despesas...");
   navigate("/dashboard/despesas");
 }
 
-
-const estilosCategoria: Record<string, string> = {
-  Alimentação: "bg-red-50 text-red-600",
-  Transporte: "bg-blue-50 text-blue-600",
-  Receitas: "bg-green-50 text-green-700",
-  Casa: "bg-violet-50 text-violet-600",
-  Lazer: "bg-teal-50 text-teal-700",
+type CategoriaResumo = {
+  id: string;
+  nome: string;
+  cor: string;
+  total: number;
+  percentagem: number;
 };
-
+type Movimento = {
+  tipo: "receita" | "despesa";
+  descricao: string;
+  valor: number;
+  data: string;
+  categoria: {
+    nome: string;
+    cor: string;
+  };
+  _id: string;
+};
 function Dashboard() {
   const navigate = useNavigate();
   const [nome, setNome] = useState("");
@@ -105,6 +47,23 @@ function Dashboard() {
   const [totalReceitas, setTotalReceitas] = useState(0);
   const [totalSaldo, setTotalSaldo] = useState(0);
   const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [categorias, setCategorias] = useState<CategoriaResumo[]>([]);
+  const [movimentos, setMovimentos] = useState<Movimento[]>([]);
+
+  const gradienteCategorias = categorias.length
+    ? `conic-gradient(${categorias
+        .reduce<{ partes: string[]; percentagemAtual: number }>(
+          (resultado, categoria) => {
+            const inicio = resultado.percentagemAtual;
+            const fim = inicio + categoria.percentagem;
+            resultado.partes.push(`${categoria.cor} ${inicio}% ${fim}%`);
+            resultado.percentagemAtual = fim;
+            return resultado;
+          },
+          { partes: [], percentagemAtual: 0 },
+        )
+        .partes.join(", ")})`
+    : "#e2e8f0";
 
   const sair = async () => {
     const resposta = await fetch("http://localhost:3000/logout", {
@@ -135,17 +94,19 @@ function Dashboard() {
 
         const resultado = await resposta_id.json();
         setNome(resultado.utilizador.nome);
-        
       } catch {
         alert("Não foi possível contactar o servidor.");
       }
     };
     const carregarDashboard = async () => {
       try {
-        const resposta = await fetch(`http://localhost:3000/dashboard?mes=${mesSelecionado}`, {
-          credentials: "include",
-          method: "GET",
-        });
+        const resposta = await fetch(
+          `http://localhost:3000/dashboard?mes=${mesSelecionado}`,
+          {
+            credentials: "include",
+            method: "GET",
+          },
+        );
         const resultado = await resposta.json();
         if (resposta.status === 401) {
           navigate("/login");
@@ -158,7 +119,25 @@ function Dashboard() {
         setTotalDespesas(resultado.resumo.totalDespesas);
         setTotalReceitas(resultado.resumo.totalReceitas);
         setTotalSaldo(resultado.resumo.saldo);
-        
+        const resposta2 = await fetch(
+          `http://localhost:3000/resumo/categorias?mes=${mesSelecionado}`,
+          { credentials: "include" },
+        );
+
+        const resultado2 = await resposta2.json();
+        if (resposta2.ok) {
+          setCategorias(resultado2.categorias);
+        }
+        const respostaMovimentos = await fetch(
+          "http://localhost:3000/movimentos/10",
+          { credentials: "include" },
+        );
+
+        const resultadoMovimentos = await respostaMovimentos.json();
+
+        if (respostaMovimentos.ok) {
+          setMovimentos(resultadoMovimentos.movimentos);
+        }
       } catch {
         alert("Não foi possível contactar o servidor.");
       }
@@ -211,7 +190,11 @@ function Dashboard() {
                   className="pointer-events-none absolute left-3 text-slate-500"
                 />
 
-                <select value={mesSelecionado} onChange={(event) => setMesSelecionado(event.target.value)} className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/20 hover:cursor-pointer">
+                <select
+                  value={mesSelecionado}
+                  onChange={(event) => setMesSelecionado(event.target.value)}
+                  className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/20 hover:cursor-pointer"
+                >
                   <option value="2024-05">Maio de 2024</option>
                   <option value="2024-04">Abril de 2024</option>
                   <option value="2024-03">Março de 2024</option>
@@ -222,7 +205,10 @@ function Dashboard() {
                   className="pointer-events-none absolute right-3 text-slate-500"
                 />
               </div>
-              <button onClick={() => AbrirDespesas(navigate)} className="appearance-none rounded-lg border border-slate-200 bg-blue-400  pl-5 pr-5 text-sm font-medium text-black outline-none  inline-flex items-center gap-2 hover:bg-blue-500 hover:cursor-pointer transition-all">
+              <button
+                onClick={() => AbrirDespesas(navigate)}
+                className="appearance-none rounded-lg border border-slate-200 bg-blue-400  pl-5 pr-5 text-sm font-medium text-black outline-none  inline-flex items-center gap-2 hover:bg-blue-500 hover:cursor-pointer transition-all"
+              >
                 <CirclePlus size={20} /> Adicionar Movimento
               </button>
             </div>
@@ -299,11 +285,14 @@ function Dashboard() {
             <div className="mt-7 flex min-h-[280px] flex-col items-center justify-center gap-8 sm:flex-row">
               <div
                 role="img"
-                aria-label="Gráfico das despesas: 38% alimentação, 25% transporte, 20% casa e 17% lazer"
+                aria-label={
+                  categorias.length
+                    ? "Gráfico das despesas por categoria"
+                    : "Não existem despesas neste período"
+                }
                 className="relative h-56 w-56 shrink-0 rounded-full"
                 style={{
-                  background:
-                    "conic-gradient(#ef4444 0 38%, #ffffff 38% 38.5%, #3b82f6 38.5% 63%, #ffffff 63% 63.5%, #7c6ee6 63.5% 83%, #ffffff 83% 83.5%, #2fb5aa 83.5% 100%)",
+                  background: gradienteCategorias,
                 }}
               >
                 <div className="absolute inset-12 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner">
@@ -315,6 +304,11 @@ function Dashboard() {
               </div>
 
               <ul className="w-full max-w-56 space-y-4 text-sm">
+                {categorias.length === 0 && (
+                  <li className="text-slate-500">
+                    Não existem despesas neste período.
+                  </li>
+                )}
                 {categorias.map((categoria) => (
                   <li
                     key={categoria.nome}
@@ -331,7 +325,7 @@ function Dashboard() {
                       {categoria.percentagem}%
                     </span>
                     <span className="mt-1 pl-5 text-slate-700">
-                      {formatarMoeda.format(categoria.valor)}
+                      {formatarMoeda.format(categoria.total)}
                     </span>
                   </li>
                 ))}
@@ -361,49 +355,45 @@ function Dashboard() {
                     <th className="px-5 py-3 font-semibold">Data</th>
                     <th className="px-3 py-3 font-semibold">Descrição</th>
                     <th className="px-3 py-3 font-semibold">Categoria</th>
-                    <th className="px-5 py-3 text-right font-semibold">Valor</th>
+                    <th className="px-5 py-3 text-right font-semibold">
+                      Valor
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {movimentosRecentes.map((movimento) => {
-                    const Icone = movimento.Icone;
-
-                    return (
+                  {movimentos.map((movimento) => (
                       <tr
-                        key={`${movimento.data}-${movimento.descricao}`}
+                        key={movimento._id}
                         className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
                       >
                         <td className="whitespace-nowrap px-5 py-3 text-slate-500">
-                          {movimento.data}
+                          {new Date(movimento.data).toLocaleDateString("pt-PT")}
                         </td>
                         <td className="px-3 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className={`rounded-lg p-2 ${movimento.estilo}`}>
-                              <Icone size={18} />
-                            </span>
-                            <span className="font-medium text-slate-700">
-                              {movimento.descricao}
-                            </span>
-                          </div>
+                          <span className="font-medium text-slate-700">
+                            {movimento.descricao}
+                          </span>
                         </td>
                         <td className="px-3 py-3">
                           <span
-                            className={`rounded-md px-2.5 py-1 text-xs font-semibold ${estilosCategoria[movimento.categoria]}`}
+                            className="rounded-md px-2.5 py-1 text-xs font-semibold text-white"
+                            style={{ backgroundColor: movimento.categoria.cor }}
                           >
-                            {movimento.categoria}
+                            {movimento.categoria.nome}
                           </span>
                         </td>
                         <td
                           className={`whitespace-nowrap px-5 py-3 text-right font-semibold ${
-                            movimento.valor >= 0 ? "text-green-700" : "text-red-600"
+                            movimento.valor >= 0
+                              ? "text-green-700"
+                              : "text-red-600"
                           }`}
                         >
-                          {movimento.valor >= 0 ? "+" : ""}
+                          {movimento.tipo === "receita" ? "+" : "-"}
                           {formatarMoeda.format(movimento.valor)}
                         </td>
                       </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>

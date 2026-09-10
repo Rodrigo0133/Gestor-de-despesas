@@ -142,21 +142,21 @@ app.post("/novadespesa", async (req, res) => {
     });
   }
 });
-app.get("/movimentos", async (req, res) => {
+app.get("/movimentos/:num", async (req, res) => {
   const userId = req.session.userId;
-
+  const num = req.params.num;
+  const limit = Number(num)
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
     });
   }
-
+  
   try {
     const [listaDespesas, listaReceitas] = await Promise.all([
-      expense.find({ userId }).lean(),
+      expense.find({ userId }).populate("categoria", "nome cor").lean(),
       receitas.find({ userId }).lean(),
     ]);
-
     const movimentos = [
       ...listaDespesas.map((despesa) => ({
         ...despesa,
@@ -165,13 +165,15 @@ app.get("/movimentos", async (req, res) => {
       ...listaReceitas.map((receita) => ({
         ...receita,
         tipo: "receita" as const,
+        categoria: { nome: receita.categoria, cor: "#15803d" },
       })),
     ].sort(
       (a, b) =>
         new Date(b.data ?? 0).getTime() - new Date(a.data ?? 0).getTime(),
     );
-
-    return res.status(200).json({ movimentos });
+    return res.status(200).json({
+      movimentos: limit > 0 ? movimentos.slice(0, limit) : movimentos,
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -1227,21 +1229,6 @@ app.get("/dashboard", async (req, res) => {
     const comparacaoDespesas = ((totalDespesas - totalDespesasMesAnterior) / (totalDespesasMesAnterior || 1)) * 100;
     const comparacaoReceitas = ((totalReceitas - totalReceitasMesAnterior) / (totalReceitasMesAnterior || 1)) * 100;
     const comparacaoSaldo = ((saldo - saldoMesAnterior) / (saldoMesAnterior || 1)) * 100;
-    const categoria = await categorias.find({ 
-      userId,
-      data:{
-        $gte: inicioDoMes,
-        $lt: inicioDoMesSeguinte,
-      }
-
-    }).lean();
-    const categorianovas = await categorias.find({
-      userId,
-      data:{
-        $gte: inicioDoMesÁ2MesesAtrás,
-        $lt: fimDoMesanterior,
-      }
-    }).limit(10).lean();
     return res.status(200).json({
       Utilizador : { nome: Utilizador?.nome },
       resumo : {
@@ -1254,8 +1241,6 @@ app.get("/dashboard", async (req, res) => {
         comparacaoReceitas,
         comparacaoSaldo
       },
-      categorias: categoria,
-      categoriasNovas: categorianovas
     });
   }catch(err){
     console.log(err);

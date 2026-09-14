@@ -119,5 +119,4 @@ As rotas protegidas exigem uma sessão iniciada. O frontend deve enviar os cooki
 - Concluir e melhorar a interface do frontend
 - Adicionar filtros e pesquisa ao histórico de movimentos
 - Exportar o resumo mensal para Excel
-- Adicionar testes à API
 - Preparar a aplicação para publicação

@@ -9,7 +9,8 @@
     "compile:ts": "tsc -p tsconfig.compile.json",
     "lint": "eslint .",
     "start": "node dist/server/index.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "npm run lint && npm run compile:ts && npm run build && npm run start"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

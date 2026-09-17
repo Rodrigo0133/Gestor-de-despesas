@@ -144,4 +144,4 @@ export async function UpdateRevenue(req: Request, res: Response){
       message: "Erro ao procurar movimento",
     });
   }
-}
+};

@@ -66,7 +66,7 @@ function Dashboard() {
     : "#e2e8f0";
 
   const sair = async () => {
-    const resposta = await fetch("http://localhost:3000/logout", {
+    const resposta = await fetch("http://localhost:3000/api/logout", {
       method: "POST",
       credentials: "include",
     });
@@ -79,7 +79,7 @@ function Dashboard() {
   useEffect(() => {
     const verificarUsuario = async () => {
       try {
-        const resposta_id = await fetch("http://localhost:3000/auth", {
+        const resposta_id = await fetch("http://localhost:3000/api/auth", {
           credentials: "include",
         });
 
@@ -101,7 +101,7 @@ function Dashboard() {
     const carregarDashboard = async () => {
       try {
         const resposta = await fetch(
-          `http://localhost:3000/dashboard?mes=${mesSelecionado}`,
+          `http://localhost:3000/api/Dashboard?mes=${mesSelecionado}`,
           {
             credentials: "include",
             method: "GET",
@@ -120,7 +120,7 @@ function Dashboard() {
         setTotalReceitas(resultado.resumo.totalReceitas);
         setTotalSaldo(resultado.resumo.saldo);
         const resposta2 = await fetch(
-          `http://localhost:3000/resumo/categorias?mes=${mesSelecionado}`,
+          `http://localhost:3000/api/summary/categories?mes=${mesSelecionado}`,
           { credentials: "include" },
         );
 
@@ -129,7 +129,7 @@ function Dashboard() {
           setCategorias(resultado2.categorias);
         }
         const respostaMovimentos = await fetch(
-          "http://localhost:3000/movimentos/10",
+          "http://localhost:3000/api/movement/10",
           { credentials: "include" },
         );
 

@@ -1,5 +1,5 @@
 import type {Request,Response} from "express"
-import { User } from "../database/db"
+import { User } from "../database/db.js"
 import argon2 from "argon2"
 export async function RegisterController(req: Request, res: Response){
   const { nome, email, senha } = req.body;

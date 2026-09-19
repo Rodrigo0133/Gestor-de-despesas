@@ -1,5 +1,5 @@
 import type { Request,Response } from "express";
-import { categorias } from "../database/db";
+import { categorias } from "../database/db.js";
 import { isValidObjectId } from "mongoose";
 export async function NewCategoryController(req:Request,res:Response) {
   const { nome, cor } = req.body;

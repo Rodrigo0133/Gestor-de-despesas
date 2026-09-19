@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { converterDataDoUtilizador } from "../Utils/ConverterDateUser";
+import { converterDataDoUtilizador } from "../Utils/ConverterDateUser.js";
 import { isValidObjectId } from "mongoose";
-import { User, categorias, expense} from "../database/db";
+import { User, categorias, expense} from "../database/db.js";
 export async function NewExpenseController(req: Request, res: Response) {
       console.log(req.body);
       const id = req.session.userId;

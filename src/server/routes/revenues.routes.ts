@@ -1,6 +1,7 @@
 import { Router } from "express";
-import {DeleteRevenue,NewRevenue,UpdateRevenue} from "../Controllers/revenues.controller"
+import {DeleteRevenue,NewRevenue,UpdateRevenue} from "../Controllers/revenues.controller.js"
 const router = Router()
 router.post("/newrevenue",NewRevenue)
 router.delete("/deleterevenue/:id",DeleteRevenue)
 router.patch("/updaterevenue/:id",UpdateRevenue)
+export default router;

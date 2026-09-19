@@ -16,7 +16,7 @@ function Registrar() {
       email,
       senha,
     };
-    const resposta = await fetch("http://localhost:3000/registrar", {
+    const resposta = await fetch("http://localhost:3000/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +30,7 @@ function Registrar() {
         pesquisa: nome,
         senha
       }
-      const resposta = await fetch("http://localhost:3000/login", {
+      const resposta = await fetch("http://localhost:3000/api/login", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -52,7 +52,7 @@ function Registrar() {
   useEffect(() => {
     const verificarUsuario = async () => {
           try {
-            const resposta_id = await fetch("http://localhost:3000/auth", {
+            const resposta_id = await fetch("http://localhost:3000/api/auth", {
               credentials: "include",
             });
     

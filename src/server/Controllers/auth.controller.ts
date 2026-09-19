@@ -1,4 +1,4 @@
-import { User, } from '../database/db';
+import { User, } from '../database/db.js';
 import type { Request, Response } from 'express';
 
     export async function AuthController(req: Request, res: Response){

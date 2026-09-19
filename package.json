@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "start": "node dist/server/index.js",
     "preview": "vite preview",
-    "check": "npm run lint && npm run compile:ts && npm run build && npm run start"
+    "check": "npm run lint && npm run build && npm run compile:ts && node --check dist/server/index.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

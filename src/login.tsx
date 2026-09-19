@@ -13,7 +13,7 @@ function Login(){
             pesquisa: nome,
             senha
         }
-        const resposta = await fetch("http://localhost:3000/login", {
+        const resposta = await fetch("http://localhost:3000/api/login", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -31,7 +31,7 @@ function Login(){
     useEffect(() => {
         const verificarUsuario = async () => {
           try {
-            const resposta_id = await fetch("http://localhost:3000/auth", {
+            const resposta_id = await fetch("http://localhost:3000/api/auth", {
               credentials: "include",
             });
     

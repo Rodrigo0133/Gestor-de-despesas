@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { converterDataDoUtilizador } from "../Utils/ConverterDateUser"
+import { converterDataDoUtilizador } from "../Utils/ConverterDateUser.js"
 import { isValidObjectId } from "mongoose";
-import { User,categorias,receitas } from "../database/db";
+import { User,categorias,receitas } from "../database/db.js";
 export async function NewRevenue(req: Request, res: Response) {
   const userId = req.session.userId;
   if (!userId) {

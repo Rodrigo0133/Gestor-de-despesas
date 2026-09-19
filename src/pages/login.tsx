@@ -1,5 +1,5 @@
 import { KeyRound, User } from "lucide-react"
-import Input from "./components/Input"
+import Input from "../components/Input"
 import { useState, type FormEvent, useEffect } from "react"
 import { useNavigate } from "react-router";
 

@@ -1,7 +1,7 @@
 import { KeyRound, Mail, User } from "lucide-react";
 import { useState, type FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router";
-import Input from "./components/Input";
+import Input from "../components/Input";
 
 function Registrar() {
   const navigate = useNavigate();

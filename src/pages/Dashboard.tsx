@@ -153,7 +153,7 @@ function Dashboard() {
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-        <Menu_dashboard nome={nome} />
+        <Menu_dashboard nome={nome} id="dashboard" />
       <div className="w-full h-full  p-3">
         <div className="mb-5 flex">
           <div id="Saudação">

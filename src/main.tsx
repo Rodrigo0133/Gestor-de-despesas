@@ -7,7 +7,7 @@ import Registrar from "./pages/Registrar.tsx";
 import Login from './pages/login.tsx';
 import Dashboard from './pages/Dashboard.tsx';
 import Despesas from './pages/Despesas.tsx';
-
+import Movements from './pages/Movements.tsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -28,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/despesas",
     element: <Despesas />
+  },
+  {
+    path: "/dashboard/movimentos",
+    element: <Movements />
   }
 ]);  
 

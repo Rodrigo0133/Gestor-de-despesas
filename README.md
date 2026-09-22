@@ -80,29 +80,40 @@ Por predefinição, o frontend fica disponível em `http://localhost:5173` e a A
 
 | Método | Rota | Função |
 | --- | --- | --- |
-| POST | `/registrar` | Criar um utilizador |
-| POST | `/login` | Iniciar sessão |
-| POST | `/logout` | Terminar sessão |
-| GET | `/auth` | Consultar o utilizador autenticado |
-| GET | `/movimentos` | Listar despesas e receitas |
-| GET | `/movimentos/:id` | Consultar um movimento |
-| POST | `/novadespesa` | Criar uma despesa |
-| PATCH | `/despesas/:id` | Atualizar uma despesa |
-| DELETE | `/despesas/:id` | Eliminar uma despesa |
-| POST | `/receita` | Criar uma receita |
-| PATCH | `/receitas/:id` | Atualizar uma receita |
-| DELETE | `/receita/:id` | Eliminar uma receita |
-| GET | `/categorias` | Listar categorias |
-| GET | `/categorias/:id` | Consultar uma categoria |
-| POST | `/categoria` | Criar uma categoria |
-| PATCH | `/categorias/:id` | Atualizar uma categoria |
-| DELETE | `/categoria/:id` | Eliminar uma categoria |
-| GET | `/resumo?ano=2026` | Obter o resumo anual |
-| GET | `/resumo?mes=2026-09` | Obter o resumo mensal |
-| GET | `/resumo/evolucao?ano=2026` | Obter a evolução mensal de um ano |
-| GET | `/resumo/categorias?ano=2026` ou `/resumo/categorias?mes=2026-09` | Obter despesas agrupadas por categoria |
+| POST | `/api/register` | Criar um utilizador |
+| POST | `/api/login` | Iniciar sessão |
+| POST | `/api/logout` | Terminar sessão |
+| GET | `/api/auth` | Consultar o utilizador autenticado |
+| GET | `/api/Dashboard?mes=2026-09` | Obter os dados mensais do dashboard |
+| GET | `/api/movement/:num` | Listar despesas e receitas, limitando o resultado a `num` movimentos; usa `0` para listar todos |
+| GET | `/api/movements/:id` | Consultar um movimento pelo seu ID |
+| POST | `/api/newexpense` | Criar uma despesa |
+| PATCH | `/api/updateexpense/:id` | Atualizar uma despesa |
+| DELETE | `/api/deleteexpense/:id` | Eliminar uma despesa |
+| POST | `/api/newrevenue` | Criar uma receita |
+| PATCH | `/api/updaterevenue/:id` | Atualizar uma receita |
+| DELETE | `/api/deleterevenue/:id` | Eliminar uma receita |
+| GET | `/api/allcategories` | Listar categorias |
+| GET | `/api/onecategory/:id` | Consultar uma categoria pelo seu ID |
+| POST | `/api/newcategory` | Criar uma categoria |
+| PATCH | `/api/UpdateCategory/:id` | Atualizar uma categoria |
+| DELETE | `/api/DeleteCategory/:id` | Eliminar uma categoria |
+| GET | `/api/summary?ano=2026` | Obter o resumo anual |
+| GET | `/api/summary?mes=2026-09` | Obter o resumo mensal |
+| GET | `/api/summary/evolution?ano=2026` | Obter a evolução mensal de um ano |
+| GET | `/api/summary/categories?ano=2026` ou `/api/summary/categories?mes=2026-09` | Obter despesas agrupadas por categoria |
 
-As rotas protegidas exigem uma sessão iniciada. O frontend deve enviar os cookies nos pedidos à API.
+Com exceção de `POST /api/register` e `POST /api/login`, todas as rotas exigem uma sessão iniciada. O frontend deve enviar os cookies nos pedidos à API.
+
+## Rotas do frontend
+
+| Rota | Página |
+| --- | --- |
+| `/` | Página inicial |
+| `/registrar` | Registo de utilizador |
+| `/login` | Início de sessão |
+| `/dashboard` | Dashboard financeiro |
+| `/dashboard/despesas` | Gestão de despesas |
 
 ## Conhecimentos adquiridos
 

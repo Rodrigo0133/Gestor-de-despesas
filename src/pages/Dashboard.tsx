@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import Menu_dashboard from "../components/Menu_dashboad";
 import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
   CirclePlus,
-  LogOut,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -65,16 +65,7 @@ function Dashboard() {
         .partes.join(", ")})`
     : "#e2e8f0";
 
-  const sair = async () => {
-    const resposta = await fetch("http://localhost:3000/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (resposta.ok) {
-      navigate("/login");
-    }
-  };
+  
 
   useEffect(() => {
     const verificarUsuario = async () => {
@@ -162,18 +153,7 @@ function Dashboard() {
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-      <aside className="flex h-full w-full flex-col gap-3 bg-slate-900 p-4 text-white justify-center ">
-        <p className="text-lg font-semibold">Gestor de despesas</p>
-        <p className="mt-auto text-lg text-center"> Olá {nome}</p>
-        <button
-          type="button"
-          onClick={sair}
-          className="items-end inline-flex cursor-pointer  gap-2 rounded-lg px-3 py-2 text-sm transition hover:bg-white/10"
-        >
-          <LogOut size={18} />
-          Sair
-        </button>
-      </aside>
+        <Menu_dashboard nome={nome} />
       <div className="w-full h-full  p-3">
         <div className="mb-5 flex">
           <div id="Saudação">

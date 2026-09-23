@@ -49,6 +49,7 @@ Cria um ficheiro `.env` na raiz do projeto a partir do `.env.example`:
 MONGODB_URI=mongodb://localhost:27017/gestor-despesas
 PORT=3000
 SESSION_SECRET=coloca_aqui_um_segredo
+VITE_API_URL=http://localhost:3000
 ```
 
 Podes gerar um valor seguro para `SESSION_SECRET` com:

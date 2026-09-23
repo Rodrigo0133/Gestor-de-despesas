@@ -3,6 +3,8 @@ import Input from "../components/Input"
 import { useState, type FormEvent, useEffect } from "react"
 import { useNavigate } from "react-router";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Login(){
       const navigate = useNavigate();
     const [nome,setNome] = useState("")
@@ -13,7 +15,7 @@ function Login(){
             pesquisa: nome,
             senha
         }
-        const resposta = await fetch("http://localhost:3000/api/login", {
+        const resposta = await fetch(`${API_URL}/api/login`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -31,7 +33,7 @@ function Login(){
     useEffect(() => {
         const verificarUsuario = async () => {
           try {
-            const resposta_id = await fetch("http://localhost:3000/api/auth", {
+            const resposta_id = await fetch(`${API_URL}/api/auth`, {
               credentials: "include",
             });
     

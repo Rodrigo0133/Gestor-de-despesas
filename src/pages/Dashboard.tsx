@@ -16,6 +16,8 @@ const formatarMoeda = new Intl.NumberFormat("pt-PT", {
   currency: "EUR",
 });
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function AbrirDespesas(navigate: ReturnType<typeof useNavigate>): void {
   console.log("Abrindo página de despesas...");
   navigate("/dashboard/despesas");
@@ -70,7 +72,7 @@ function Dashboard() {
   useEffect(() => {
     const verificarUsuario = async () => {
       try {
-        const resposta_id = await fetch("http://localhost:3000/api/auth", {
+        const resposta_id = await fetch(`${API_URL}/api/auth`, {
           credentials: "include",
         });
 
@@ -92,7 +94,7 @@ function Dashboard() {
     const carregarDashboard = async () => {
       try {
         const resposta = await fetch(
-          `http://localhost:3000/api/Dashboard?mes=${mesSelecionado}`,
+          `${API_URL}/api/Dashboard?mes=${mesSelecionado}`,
           {
             credentials: "include",
             method: "GET",
@@ -111,7 +113,7 @@ function Dashboard() {
         setTotalReceitas(resultado.resumo.totalReceitas);
         setTotalSaldo(resultado.resumo.saldo);
         const resposta2 = await fetch(
-          `http://localhost:3000/api/summary/categories?mes=${mesSelecionado}`,
+          `${API_URL}/api/summary/categories?mes=${mesSelecionado}`,
           { credentials: "include" },
         );
 
@@ -120,7 +122,7 @@ function Dashboard() {
           setCategorias(resultado2.categorias);
         }
         const respostaMovimentos = await fetch(
-          "http://localhost:3000/api/movement/10",
+          `${API_URL}/api/movement/10`,
           { credentials: "include" },
         );
 

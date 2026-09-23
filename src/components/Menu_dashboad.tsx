@@ -1,5 +1,8 @@
 import { LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface UserProps{
     nome: string
     id: string
@@ -12,7 +15,7 @@ function Menu_dashboard({ nome } : UserProps){
     ]
     const navigate = useNavigate()
     const sair = async () => {
-        const resposta = await fetch("http://localhost:3000/api/logout", {
+        const resposta = await fetch(`${API_URL}/api/logout`, {
           method: "POST",
           credentials: "include",
         });

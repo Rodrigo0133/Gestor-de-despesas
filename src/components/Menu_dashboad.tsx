@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
 
@@ -8,6 +9,7 @@ interface UserProps{
     id: string
 }
 function Menu_dashboard({ nome } : UserProps){
+    const [hovered, setHovered] = useState<string | null>(null);
     const buttons = [
       {id: "dashboard", name: "Dashboard", route: "/dashboard"},
       {id: "despesa", name: "Despesa", route: "/dashboard/despesas"},
@@ -34,10 +36,12 @@ function Menu_dashboard({ nome } : UserProps){
                 key={button.id}
                 to={button.route}
                 end
+                onMouseEnter={() => setHovered(button.id)}
+                onMouseLeave={() => setHovered(null)}
                 className={({ isActive }) => `rounded-lg px-4 py-2 font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                  isActive
+                  hovered === button.id || (hovered === null && isActive)
                     ? "bg-blue-500 text-white shadow-sm"
-                    : "bg-slate-700 text-slate-100 hover:bg-slate-600 hover:text-white"
+                    : "bg-slate-700 text-slate-100"
                 }`}
               >
                 {button.name}

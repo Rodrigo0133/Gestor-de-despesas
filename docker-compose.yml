@@ -1,0 +1,51 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-atlas-local
+    hostname: mongodb
+    container_name: DB_gestordedespesas
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - db:/data/db
+      - configdb:/data/configdb
+      - mongot:/data/mongot
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: src/server/dockerfile
+    container_name: API_gestordedespesas
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - SESSION_SECRET=${SESSION_SECRET}
+      - PORT=${PORT}
+      - MONGODB_URI=mongodb://${MONGODB_INITDB_ROOT_USERNAME}:${MONGODB_INITDB_ROOT_PASSWORD}@mongodb:27017/meu_banco?authSource=admin
+    depends_on:
+      - mongodb
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/client/dockerfile
+    container_name: React_Frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    depends_on:
+      - api
+    restart: always
+
+volumes:
+  db:
+  configdb:
+  mongot:

@@ -1,0 +1,14 @@
+FROM node:24.16.0
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY tsconfig.compile.json ./
+COPY src/server ./src/server
+RUN npm run compile:ts
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]

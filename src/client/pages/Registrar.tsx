@@ -3,6 +3,8 @@ import { useState, type FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Input from "../components/Input";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Registrar() {
   const navigate = useNavigate();
 
@@ -16,7 +18,7 @@ function Registrar() {
       email,
       senha,
     };
-    const resposta = await fetch("http://localhost:3000/api/register", {
+    const resposta = await fetch(`${API_URL}/api/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +32,7 @@ function Registrar() {
         pesquisa: nome,
         senha
       }
-      const resposta = await fetch("http://localhost:3000/api/login", {
+      const resposta = await fetch(`${API_URL}/api/login`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -52,7 +54,7 @@ function Registrar() {
   useEffect(() => {
     const verificarUsuario = async () => {
           try {
-            const resposta_id = await fetch("http://localhost:3000/api/auth", {
+            const resposta_id = await fetch(`${API_URL}/api/auth`, {
               credentials: "include",
             });
     

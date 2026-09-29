@@ -90,6 +90,11 @@ const categoriasSchema = new Schema(
 
 const receitasSchema = new Schema(
   {
+    titulo:{
+      type: String,
+      required: true,
+      
+    },
     descricao: {
       type: String,
       required: true,

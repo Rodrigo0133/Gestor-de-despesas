@@ -1,0 +1,8 @@
+.env
+node_modules
+src/server
+dist
+tsconfig.app.json
+tsconfig.compile.json
+tsconfig.node.json
+.git

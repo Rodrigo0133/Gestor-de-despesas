@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
+import Menu_dashboard from "../components/Menu_dashboad";
 
 function Despesas() {
   const [tipo, setTipo] = useState<"despesa" | "receita">("despesa");
@@ -7,7 +8,9 @@ function Despesas() {
   return (
     <div>
       <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-        <div></div>
+        <div>
+          <Menu_dashboard  />
+        </div>
         <div className="flex flex-col items-start  min-h-screen bg-gray-200">
           <div className="flex  mt-2 ml-2">
             <p>
@@ -27,7 +30,7 @@ function Despesas() {
           </div>
           <div className="flex h-full mb-3 ml-2 mt-5">
             <div className="w-[700px] flex flex-col bg-white">
-              <div className="flex ml-2 mr-2 h-[40px] gap-2 mt-2">
+              <div className="flex ml-2 mr-2 h-[40px] gap-2 mt-3">
                 <button
                   type="button"
                   aria-pressed={tipo === "despesa"}
@@ -59,8 +62,18 @@ function Despesas() {
                   Receita
                 </button>
               </div>
+              <div className="text-left">
+                <form action="" className="flex flex-col he">
+                  <input
+                    type="text"
+                    name="titulo"
+                    id="titulo"
+                    placeholder="titulo"
+                  />
+                </form>
+              </div>
             </div>
-            <div className=" w-[300px] ml-2 h-[250px]"> </div>
+            <div className=" w-[300px] ml-2 h-[250px]"></div>
           </div>
         </div>
       </div>

@@ -1,13 +1,8 @@
 import { useState, useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
-import { json } from "stream/consumers";
-
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface UserProps {
-  nome: string;
-}
 function Menu_dashboard() {
   const [hovered, setHovered] = useState<string | null>(null);
   const buttons = [

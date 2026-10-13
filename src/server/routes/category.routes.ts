@@ -1,10 +1,12 @@
+import { exigirAutenticacao } from "../middleware/auth.middleware.js";
 import { Router } from "express";
 import { UpdateCategoryController,AllcategoriesController,DeleteCategoryController,NewCategoryController,OneCategoryController } from "../Controllers/category.controller.js";
 
 const router = Router();
-router.get("/allcategories",AllcategoriesController)
-router.get("/onecategory/:id",OneCategoryController)
-router.post("/newcategory",NewCategoryController)
-router.delete("/DeleteCategory/:id",DeleteCategoryController)
-router.patch("/UpdateCategory/:id",UpdateCategoryController)
+// Valida a sessão antes de executar os controllers destas rotas privadas.
+router.get("/allcategories", exigirAutenticacao, AllcategoriesController)
+router.get("/onecategory/:id", exigirAutenticacao, OneCategoryController)
+router.post("/newcategory", exigirAutenticacao, NewCategoryController)
+router.delete("/DeleteCategory/:id", exigirAutenticacao, DeleteCategoryController)
+router.patch("/UpdateCategory/:id", exigirAutenticacao, UpdateCategoryController)
 export default router;

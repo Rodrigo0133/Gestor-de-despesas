@@ -84,7 +84,6 @@ Por predefinição, o frontend fica disponível em `http://localhost:5173` e a A
 | POST | `/api/register` | Criar um utilizador |
 | POST | `/api/login` | Iniciar sessão |
 | POST | `/api/logout` | Terminar sessão |
-| GET | `/api/auth` | Consultar o utilizador autenticado |
 | GET | `/api/Dashboard?mes=2026-09` | Obter os dados mensais do dashboard |
 | GET | `/api/movement/:num` | Listar despesas e receitas, limitando o resultado a `num` movimentos; usa `0` para listar todos |
 | GET | `/api/movements/:id` | Consultar um movimento pelo seu ID |
@@ -105,6 +104,21 @@ Por predefinição, o frontend fica disponível em `http://localhost:5173` e a A
 | GET | `/api/summary/categories?ano=2026` ou `/api/summary/categories?mes=2026-09` | Obter despesas agrupadas por categoria |
 
 Com exceção de `POST /api/register` e `POST /api/login`, todas as rotas exigem uma sessão iniciada. O frontend deve enviar os cookies nos pedidos à API.
+
+A autenticação das rotas privadas é feita por `exigirAutenticacao`, em `src/server/middleware/auth.middleware.ts`. Antes de executar o controller, o middleware verifica `req.session.userId` e confirma que a conta ainda existe na base de dados. Sem sessão ou sem utilizador, responde com `401`; com uma conta válida, chama `next()` e deixa o controller produzir a resposta da rota. Erros na consulta à base de dados seguem para o tratamento de erros do Express.
+
+O dashboard obtém o nome do utilizador através da sua própria resposta. A página de adicionar movimentos trata a falta de sessão ao carregar as categorias. Login e registo usam essa mesma rota protegida de categorias para redirecionar utilizadores que já tenham sessão. Não existe um endpoint separado para consultar a autenticação.
+
+## Testes de autenticação
+
+Compila o backend e executa os testes com as ferramentas já incluídas no projeto:
+
+```bash
+npm run compile:ts
+node --test tests/authentication.test.mjs
+```
+
+Os testes fazem pedidos HTTP às rotas reais, usando sessões e cookies do Express. Apenas as consultas ao MongoDB são substituídas, pelo que não é necessário ligar uma base de dados. Cobrem as 18 rotas privadas sem sessão, login e registo públicos, acesso com sessão válida, conta eliminada, falha na consulta do utilizador e remoção da antiga rota de autenticação.
 
 ## Rotas do frontend
 

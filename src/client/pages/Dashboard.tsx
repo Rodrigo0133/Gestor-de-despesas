@@ -10,11 +10,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-
-export const formatarMoeda = new Intl.NumberFormat("pt-PT", {
-  style: "currency",
-  currency: "EUR",
-});
+import { formatarMoeda } from "../utils/formatarmoeda";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -67,7 +63,7 @@ function Dashboard() {
         .partes.join(", ")})`
     : "#e2e8f0";
 
-  
+
 
   useEffect(() => {
     const carregarDashboard = async () => {
@@ -363,6 +359,6 @@ function Dashboard() {
       </div>
     </div>
   );
-  
+
 }
 export default Dashboard;

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Menu_dashboard from "../components/Menu_dashboad";
 import { Navigate } from "react-router";
 import Top_Painel from "../components/Top_Painel";
-import { formatarMoeda } from "./Dashboard";
+import { formatarMoeda } from "../utils/formatarmoeda";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -37,7 +37,7 @@ function Movements() {
 
   return (
     <div className="grid min-h-screen w-full grid-cols-[200px_1fr] bg-slate-50 ">
-      <Menu_dashboard nome="Rodrigo" id="movimentos" />
+      <Menu_dashboard />
 
       <div className="w-full h-full  p-3">
         <div>

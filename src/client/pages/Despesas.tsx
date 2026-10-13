@@ -13,6 +13,8 @@ import { useNavigate } from "react-router";
 import Menu_dashboard from "../components/Menu_dashboad";
 import Top_Painel from "../components/Top_Painel";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 type TipoMovimento = "despesa" | "receita";
 type Categoria = { _id: string; nome: string; cor: string };
 
@@ -35,7 +37,6 @@ function Despesas() {
   const despesa = tipo === "despesa";
   const rotuloTipo = despesa ? "Despesa" : "Receita";
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL;
   const AdicionarDespesa = async () => {
     try {
       const resposta = await fetch(`${API_URL}/api/newexpense`, {

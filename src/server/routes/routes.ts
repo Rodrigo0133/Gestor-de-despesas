@@ -1,5 +1,4 @@
 import { Router } from "express";
-import authRoutes from "./auth.routes.js";
 import categoryRoutes from "./category.routes.js";
 import dashboardRoutes from "./dashboard.routes.js";
 import expensesRoutes from "./expenses.routes.js";
@@ -10,7 +9,6 @@ import summaryRoutes from "./summary.routes.js";
 
 const router = Router();
 
-router.use(authRoutes);
 router.use(categoryRoutes);
 router.use(dashboardRoutes);
 router.use(expensesRoutes);

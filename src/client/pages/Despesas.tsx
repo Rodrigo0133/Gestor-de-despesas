@@ -80,30 +80,17 @@ function Despesas() {
     }
   }
   useEffect(() => {
-    const verificarUsuario = async () => {
-      try {
-        const resposta_id = await fetch(`${API_URL}/api/auth`, {
-          credentials: "include",
-        });
-
-        if (resposta_id.status === 401) {
-          navigate("/login");
-          return;
-        }
-
-        if (!resposta_id.ok) {
-          throw new Error("Erro ao verificar sessão");
-        }
-      } catch {
-        alert("Não foi possível contactar o servidor.");
-      }
-    };
-
     const Catergorias = async () => {
       try {
         const resposta = await fetch(`${API_URL}/api/allcategories`, {
           credentials: "include",
         });
+
+        // A consulta de categorias já é protegida pelo middleware de autenticação.
+        if (resposta.status === 401) {
+          navigate("/login");
+          return;
+        }
 
         if (!resposta.ok) {
           throw new Error("Erro ao obter categorias");
@@ -119,7 +106,6 @@ function Despesas() {
     };
 
     Catergorias();
-    verificarUsuario();
   }, [navigate]);
   async function guardarMovimento(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -70,27 +70,6 @@ function Dashboard() {
   
 
   useEffect(() => {
-    const verificarUsuario = async () => {
-      try {
-        const resposta_id = await fetch(`${API_URL}/api/auth`, {
-          credentials: "include",
-        });
-
-        if (resposta_id.status === 401) {
-          navigate("/login");
-          return;
-        }
-
-        if (!resposta_id.ok) {
-          throw new Error("Erro ao verificar sessão");
-        }
-
-        const resultado = await resposta_id.json();
-        setNome(resultado.utilizador.nome);
-      } catch {
-        alert("Não foi possível contactar o servidor.");
-      }
-    };
     const carregarDashboard = async () => {
       try {
         const resposta = await fetch(
@@ -149,7 +128,7 @@ function Dashboard() {
     };
 
     VerificarHoras();
-    verificarUsuario();
+    // O dashboard já obtém o nome e trata o 401 devolvido pelo middleware.
     carregarDashboard();
   }, [navigate, mesSelecionado]);
 

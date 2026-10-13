@@ -54,7 +54,8 @@ function Registrar() {
   useEffect(() => {
     const verificarUsuario = async () => {
           try {
-            const resposta_id = await fetch(`${API_URL}/api/auth`, {
+            // A rota de categorias passa pelo middleware e permite manter este redirecionamento.
+            const resposta_id = await fetch(`${API_URL}/api/allcategories`, {
               credentials: "include",
             });
     

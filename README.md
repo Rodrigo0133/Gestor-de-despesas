@@ -111,14 +111,13 @@ O dashboard obtém o nome do utilizador através da sua própria resposta. A pá
 
 ## Testes de autenticação
 
-Compila o backend e executa os testes com as ferramentas já incluídas no projeto:
+Executa os testes de autenticação com Vitest:
 
 ```bash
-npm run compile:ts
-node --test tests/authentication.test.mjs
+npm test
 ```
 
-Os testes fazem pedidos HTTP às rotas reais, usando sessões e cookies do Express. Apenas as consultas ao MongoDB são substituídas, pelo que não é necessário ligar uma base de dados. Cobrem as 18 rotas privadas sem sessão, login e registo públicos, acesso com sessão válida, conta eliminada, falha na consulta do utilizador e remoção da antiga rota de autenticação.
+Os testes em `tests/authentication.test.ts` importam diretamente o código TypeScript do backend, sem precisar de compilação prévia. Fazem pedidos HTTP às rotas reais, usando sessões e cookies do Express. Apenas as consultas ao MongoDB são substituídas com mocks do Vitest, pelo que não é necessário ligar uma base de dados. Cobrem as 18 rotas privadas sem sessão, login e registo públicos, acesso com sessão válida, conta eliminada, falha na consulta do utilizador e remoção da antiga rota de autenticação.
 
 ## Rotas do frontend
 

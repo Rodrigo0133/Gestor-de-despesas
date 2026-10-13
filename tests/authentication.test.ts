@@ -1,28 +1,18 @@
-import assert from "node:assert/strict";
-import { after, before, test } from "node:test";
-import express from "express";
+import type { Server } from "node:http";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
+import express, { type ErrorRequestHandler } from "express";
 import session from "express-session";
-import routes from "../dist/server/routes/routes.js";
-import { User, categorias } from "../dist/server/database/db.js";
+import routes from "../src/server/routes/routes.js";
+import { User, categorias } from "../src/server/database/db.js";
 
 const userId = "507f1f77bcf86cd799439011";
-let server;
-let baseUrl;
-let cookie;
-let utilizadorExiste = true;
-let erroBaseDados = false;
-let consultasUtilizador = 0;
-const findByIdOriginal = User.findById;
-const findCategoriasOriginal = categorias.find;
-
-before(async () => {
+let server: Server;
+let baseUrl: string;
+let cookie: string;
+beforeAll(async () => {
   // Isola apenas o MongoDB: os pedidos passam pelo Express, cookies e rotas reais.
-  User.findById = async () => {
-    consultasUtilizador++;
-    if (erroBaseDados) throw new Error("Base de dados indisponível");
-    return utilizadorExiste ? { _id: userId, nome: "Teste" } : null;
-  };
-  categorias.find = async () => [];
+  vi.spyOn(User, "findById").mockResolvedValue(User.hydrate({ _id: userId, nome: "Teste" }));
+  vi.spyOn(categorias, "find").mockResolvedValue([]);
   const app = express();
   app.use(express.json());
   app.use(session({ secret: "segredo-apenas-para-testes", resave: false, saveUninitialized: false }));
@@ -32,24 +22,35 @@ before(async () => {
     res.sendStatus(204);
   });
   app.use("/api", routes);
-  app.use((erro, req, res, next) => {
+  const tratarErro: ErrorRequestHandler = (erro: Error, req, res, next) => {
     void req;
     void next;
     res.status(500).json({ message: erro.message });
-  });
+  };
+  app.use(tratarErro);
   server = app.listen(0, "127.0.0.1");
-  await new Promise((resolve) => server.once("listening", resolve));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  await new Promise<void>((resolve, reject) => {
+    server.once("listening", resolve);
+    server.once("error", reject);
+  });
+  const endereco = server.address();
+  if (!endereco || typeof endereco === "string") throw new Error("Servidor de teste sem porta TCP");
+  baseUrl = `http://127.0.0.1:${endereco.port}`;
   const resposta = await fetch(`${baseUrl}/sessao-teste`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId }),
   });
-  cookie = resposta.headers.get("set-cookie").split(";")[0];
+  const cookieSessao = resposta.headers.get("set-cookie");
+  if (!cookieSessao) throw new Error("Sessão de teste sem cookie");
+  cookie = cookieSessao.split(";")[0];
 });
 
-after(async () => {
-  User.findById = findByIdOriginal;
-  categorias.find = findCategoriasOriginal;
-  await new Promise((resolve) => server.close(resolve));
+afterAll(async () => {
+  vi.restoreAllMocks();
+  if (server) {
+    await new Promise<void>((resolve, reject) => {
+      server.close((erro) => erro ? reject(erro) : resolve());
+    });
+  }
 });
 
 const rotasPrivadas = [
@@ -64,8 +65,8 @@ const rotasPrivadas = [
 for (const [method, path] of rotasPrivadas) {
   test(`${method} ${path} rejeita pedidos sem sessão antes do controller`, async () => {
     const resposta = await fetch(`${baseUrl}/api${path}`, { method });
-    assert.equal(resposta.status, 401);
-    assert.deepEqual(await resposta.json(), { message: "Precisas de iniciar sessão" });
+    expect(resposta.status).toBe(401);
+    expect(await resposta.json()).toEqual({ message: "Precisas de iniciar sessão" });
   });
 }
 
@@ -74,37 +75,33 @@ for (const path of ["/login", "/register"]) {
     const resposta = await fetch(`${baseUrl}/api${path}`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
     });
-    assert.equal(resposta.status, 400);
-    assert.deepEqual(await resposta.json(), { message: "Preenche todos os campos" });
+    expect(resposta.status).toBe(400);
+    expect(await resposta.json()).toEqual({ message: "Preenche todos os campos" });
   });
 }
 
 test("sessão válida permite executar o controller de categorias", async () => {
-  consultasUtilizador = 0;
+  vi.mocked(User.findById).mockClear();
   const resposta = await fetch(`${baseUrl}/api/allcategories`, { headers: { Cookie: cookie } });
-  assert.equal(resposta.status, 201);
-  assert.deepEqual(await resposta.json(), { utilizador: [] });
-  assert.equal(consultasUtilizador, 1);
+  expect(resposta.status).toBe(201);
+  expect(await resposta.json()).toEqual({ utilizador: [] });
+  expect(User.findById).toHaveBeenCalledExactlyOnceWith(userId);
 });
 
 test("sessão de utilizador eliminado é rejeitada", async () => {
-  utilizadorExiste = false;
-  try {
-    const resposta = await fetch(`${baseUrl}/api/allcategories`, { headers: { Cookie: cookie } });
-    assert.equal(resposta.status, 401);
-    assert.deepEqual(await resposta.json(), { message: "Utilizador não encontrado" });
-  } finally { utilizadorExiste = true; }
+  vi.mocked(User.findById).mockResolvedValueOnce(null);
+  const resposta = await fetch(`${baseUrl}/api/allcategories`, { headers: { Cookie: cookie } });
+  expect(resposta.status).toBe(401);
+  expect(await resposta.json()).toEqual({ message: "Utilizador não encontrado" });
 });
 
 test("erro na consulta do utilizador segue para o tratamento de erros", async () => {
-  erroBaseDados = true;
-  try {
-    const resposta = await fetch(`${baseUrl}/api/allcategories`, { headers: { Cookie: cookie } });
-    assert.equal(resposta.status, 500);
-  } finally { erroBaseDados = false; }
+  vi.mocked(User.findById).mockRejectedValueOnce(new Error("Base de dados indisponível"));
+  const resposta = await fetch(`${baseUrl}/api/allcategories`, { headers: { Cookie: cookie } });
+  expect(resposta.status).toBe(500);
 });
 
 test("a antiga rota de consulta de autenticação deixou de existir", async () => {
   const resposta = await fetch(`${baseUrl}/api/${"au" + "th"}`, { headers: { Cookie: cookie } });
-  assert.equal(resposta.status, 404);
+  expect(resposta.status).toBe(404);
 });

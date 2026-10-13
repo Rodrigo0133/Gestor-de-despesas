@@ -9,8 +9,8 @@ export async function NewRevenue(req: Request, res: Response) {
       message: "Precisas ter uma conta logada!",
     });
   }
-  const { descricao, valor, data, categoria } = req.body;
-  if (!descricao || !valor || !data || !categoria) {
+  const { titulo,descricao, valor, data, categoria } = req.body;
+  if (!titulo || !descricao || !valor || !data || !categoria) {
     return res.status(400).json({
       message: "Preenche todos os campos",
     });
@@ -53,6 +53,7 @@ export async function NewRevenue(req: Request, res: Response) {
   }
   try {
     const novareceita = await receitas.create({
+      titulo,
       descricao,
       valor,
       data: dataDoMovimento,

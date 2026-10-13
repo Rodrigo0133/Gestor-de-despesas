@@ -12,8 +12,8 @@ export async function NewExpenseController(req: Request, res: Response) {
         });
       }
     
-      const { descricao, valor, data, categoria } = req.body;
-      if (!descricao || !valor || !data || !categoria) {
+      const { titulo,descricao, valor, data, categoria } = req.body;
+      if ( !titulo ||!descricao || !valor || !data || !categoria) {
         return res.status(400).json({
           message: "Preenche todos os campos",
         });

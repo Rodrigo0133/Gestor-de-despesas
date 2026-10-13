@@ -35,6 +35,10 @@ const userSchema = new Schema(
 );
 const expenseSchema = new Schema(
   {
+    titulo: {
+      type: String,
+      required: true,
+    },
     descricao: {
       type: String,
       required: true,

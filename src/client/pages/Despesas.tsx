@@ -18,6 +18,7 @@ type Categoria = { _id: string; nome: string; cor: string };
 
 function Despesas() {
   const [tipo, setTipo] = useState<TipoMovimento>("despesa");
+  const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [data, setData] = useState("");
@@ -29,7 +30,7 @@ function Despesas() {
     (item) => item._id === categoriaSelecionada,
   );
   const movimentoCompleto = Boolean(
-    descricao.trim() && valor && data && categoriaSelecionada,
+    titulo.trim() && descricao.trim() && valor && data && categoriaSelecionada,
   );
   const despesa = tipo === "despesa";
   const rotuloTipo = despesa ? "Despesa" : "Receita";
@@ -44,6 +45,7 @@ function Despesas() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          titulo,
           descricao,
           valor,
           data,
@@ -66,6 +68,7 @@ function Despesas() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          titulo,
           descricao,
           valor,
           data,
@@ -174,6 +177,18 @@ function Despesas() {
             </div>
 
             <div className="mt-7 grid gap-5">
+              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                <span>
+                  Título <span className="text-rose-500">*</span>
+                </span>
+                <input
+                  value={titulo}
+                  onChange={(event) => setTitulo(event.target.value)}
+                  required
+                  placeholder="Ex.: Supermercado"
+                  className="h-12 rounded-xl border border-slate-200 px-4 font-normal text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                />
+              </label>
               <label className="grid gap-2 text-sm font-semibold text-slate-700">
                 <span>
                   Descrição <span className="text-rose-500">*</span>
@@ -318,7 +333,7 @@ function Despesas() {
               <p className="mt-1 text-xs leading-5 text-slate-600">
                 {movimentoCompleto
                   ? "Todos os dados essenciais foram preenchidos."
-                  : "Completa a descrição, o valor, a data e a categoria."}
+                  : "Completa o título, a descrição, o valor, a data e a categoria."}
               </p>
             </div>
             <dl className="mt-5 divide-y divide-slate-100 text-sm">

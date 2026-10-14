@@ -8,6 +8,7 @@ import Login from './pages/login.tsx';
 import Dashboard from './pages/Dashboard.tsx';
 import Despesas from './pages/Despesas.tsx';
 import Movements from './pages/Movements.tsx';
+import Categoria from './pages/Categoria.tsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,8 +33,12 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/movimentos",
     element: <Movements />
+  },
+  {
+    path: "/dashboard/categoria",
+    element: <Categoria />
   }
-]);  
+]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -339,6 +339,12 @@ function Despesas() {
             </div>
             <dl className="mt-5 divide-y divide-slate-100 text-sm">
               <div className="flex items-center justify-between gap-4 py-3">
+                <dt className="text-slate-500">Título</dt>
+                <dd className="max-w-40 truncate text-right font-semibold text-slate-800">
+                  {titulo.trim() || "Por indicar"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 py-3">
                 <dt className="text-slate-500">Descrição</dt>
                 <dd className="max-w-40 truncate text-right font-semibold text-slate-800">
                   {descricao || "Por indicar"}

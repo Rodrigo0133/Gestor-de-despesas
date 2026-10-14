@@ -124,7 +124,6 @@ function Dashboard() {
     };
 
     VerificarHoras();
-    // O dashboard já obtém o nome e trata o 401 devolvido pelo middleware.
     carregarDashboard();
   }, [navigate, mesSelecionado]);
 

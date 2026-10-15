@@ -24,7 +24,6 @@ declare module "express-session" {
     userId: string;
   }
 }
-
 if (!mongoUri || !sessionSecret) {
   throw new Error("Define MONGODB_URI e SESSION_SECRET no .env");
 }

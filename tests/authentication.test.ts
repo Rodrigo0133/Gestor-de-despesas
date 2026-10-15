@@ -1,15 +1,20 @@
 import type { Server } from "node:http";
-import { afterAll, beforeAll, expect, test, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, test, vi } from "vitest";
 import express, { type ErrorRequestHandler } from "express";
 import session from "express-session";
 import { Types } from "mongoose";
 import routes from "../src/server/routes/routes.js";
 import { User, categorias, expense, receitas } from "../src/server/database/db.js";
+import { dashboard_limit, login_limit } from "../src/server/middleware/rateLimits.middleware.js";
 
 const userId = "507f1f77bcf86cd799439011";
 let server: Server;
 let baseUrl: string;
 let cookie: string;
+beforeEach(async () => {
+  await dashboard_limit.resetKey("127.0.0.1");
+  await login_limit.resetKey("127.0.0.1");
+});
 beforeAll(async () => {
   // Isola apenas o MongoDB: os pedidos passam pelo Express, cookies e rotas reais.
   vi.spyOn(User, "findById").mockResolvedValue(User.hydrate({ _id: userId, nome: "Teste" }));
@@ -105,6 +110,41 @@ test("erro na consulta do utilizador segue para o tratamento de erros", async ()
 test("a antiga rota de consulta de autenticação deixou de existir", async () => {
   const resposta = await fetch(`${baseUrl}/api/${"au" + "th"}`, { headers: { Cookie: cookie } });
   expect(resposta.status).toBe(404);
+});
+
+test("login e registo partilham 5 pedidos por minuto e devolvem 429", async () => {
+  for (let indice = 0; indice < 5; indice++) {
+    const rota = indice % 2 === 0 ? "login" : "register";
+    const resposta = await fetch(`${baseUrl}/api/${rota}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+    });
+    expect(resposta.status).toBe(400);
+  }
+  const bloqueado = await fetch(`${baseUrl}/api/login`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+  });
+  expect(bloqueado.status).toBe(429);
+  expect(Number(bloqueado.headers.get("retry-after"))).toBeGreaterThan(0);
+  expect((await bloqueado.json()).message).toContain("Demasiadas");
+  const dados = await fetch(`${baseUrl}/api/allcategories`);
+  expect(dados.status).toBe(401);
+});
+
+test("rotas de dados partilham 20 pedidos sem bloquear login ou logout", async () => {
+  for (let indice = 0; indice < 20; indice++) {
+    const rota = indice % 2 === 0 ? "allcategories" : "movement/0";
+    const resposta = await fetch(`${baseUrl}/api/${rota}`);
+    expect(resposta.status).toBe(401);
+    expect(resposta.headers.get("ratelimit")).toBeTruthy();
+  }
+  const bloqueado = await fetch(`${baseUrl}/api/newexpense`, { method: "POST" });
+  expect(bloqueado.status).toBe(429);
+  const login = await fetch(`${baseUrl}/api/login`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+  });
+  expect(login.status).toBe(400);
+  const logout = await fetch(`${baseUrl}/api/logout`, { method: "POST" });
+  expect(logout.status).toBe(401);
 });
 
 for (const [rota, modelo] of [["/newexpense", expense], ["/newrevenue", receitas]] as const) {

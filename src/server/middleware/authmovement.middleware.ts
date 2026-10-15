@@ -1,13 +1,13 @@
 
 import type { Request, Response, NextFunction } from "express";
-import { expense } from "../database/db";
+import { expense } from "../database/db.js";
 import z from "zod";
 
 const category = z.object({
   despesaId: z.string().min(1),
   userId: z.string().min(1),
 });
-const category2 = z.oject({
+const category2 = z.object({
   receitaId: z.string().min(1),
   userId: z.string().min(1),
 })

@@ -2,8 +2,9 @@ import type { Server } from "node:http";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 import express, { type ErrorRequestHandler } from "express";
 import session from "express-session";
+import { Types } from "mongoose";
 import routes from "../src/server/routes/routes.js";
-import { User, categorias } from "../src/server/database/db.js";
+import { User, categorias, expense, receitas } from "../src/server/database/db.js";
 
 const userId = "507f1f77bcf86cd799439011";
 let server: Server;
@@ -105,3 +106,64 @@ test("a antiga rota de consulta de autenticação deixou de existir", async () =
   const resposta = await fetch(`${baseUrl}/api/${"au" + "th"}`, { headers: { Cookie: cookie } });
   expect(resposta.status).toBe(404);
 });
+
+for (const [rota, modelo] of [["/newexpense", expense], ["/newrevenue", receitas]] as const) {
+  test.each([12.5, 42])(`${rota} guarda o título, o valor %s e a data enviados por JSON`, async (valor) => {
+    const categoriaId = "507f1f77bcf86cd799439012";
+    const procurarCategoria = vi.spyOn(categorias, "findOne").mockResolvedValueOnce(
+      categorias.hydrate({ _id: categoriaId, userId, nome: "Alimentação", cor: "#3b82f6" }),
+    );
+    // Mantém a validação real do Mongoose e substitui apenas a escrita no MongoDB.
+    const inserir = vi.spyOn(modelo.collection, "insertOne").mockResolvedValueOnce({
+      acknowledged: true,
+      insertedId: new Types.ObjectId(),
+    });
+    try {
+      const resposta = await fetch(`${baseUrl}/api${rota}`, {
+        method: "POST",
+        headers: { Cookie: cookie, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: "Supermercado",
+          descricao: "Compras da semana",
+          valor,
+          data: "2026-05-15",
+          categoria: categoriaId,
+        }),
+      });
+      expect(resposta.status).toBe(201);
+      expect(inserir).toHaveBeenCalledTimes(1);
+      expect(inserir.mock.calls[0][0]).toEqual(expect.objectContaining({
+        titulo: "Supermercado",
+        descricao: "Compras da semana",
+        valor,
+        data: new Date("2026-05-15T00:00:00.000Z"),
+      }));
+      expect(String(inserir.mock.calls[0][0].categoria)).toBe(categoriaId);
+      expect(String(inserir.mock.calls[0][0].userId)).toBe(userId);
+    } finally {
+      procurarCategoria.mockRestore();
+      inserir.mockRestore();
+    }
+  });
+
+  test(`${rota} rejeita uma data impossível antes de gravar`, async () => {
+    const inserir = vi.spyOn(modelo.collection, "insertOne");
+    try {
+      const resposta = await fetch(`${baseUrl}/api${rota}`, {
+        method: "POST",
+        headers: { Cookie: cookie, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titulo: "Supermercado",
+          descricao: "Compras da semana",
+          valor: 12.5,
+          data: "2026-02-30",
+          categoria: "507f1f77bcf86cd799439012",
+        }),
+      });
+      expect(resposta.status).toBe(400);
+      expect(inserir).not.toHaveBeenCalled();
+    } finally {
+      inserir.mockRestore();
+    }
+  });
+}

@@ -9,8 +9,9 @@ function Categoria() {
   const [nome, setnome] = useState<string>("");
   const [cor, setcor] = useState<string>("#3b82f6");
   async function RegistrarCategoria() {
-    if (!nome) {
-      throw new Error("Precisa de um nome")
+    if (!nome.trim()) {
+      alert("Precisas de indicar um nome");
+      return;
     } else {
       try {
         const API_URL = import.meta.env.VITE_API_URL
@@ -21,18 +22,20 @@ function Categoria() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            nome,
+            nome: nome.trim(),
             cor
           })
         })
         if (!pedido.ok) {
-          throw new Error("Erro ao adicionar categoria");
+          const erro = await pedido.json().catch(() => null);
+          alert(erro?.message ?? "Erro ao adicionar categoria");
+          return;
         } else {
           navigate("/dashboard/despesas")
         }
       } catch (erro) {
-        console.log(erro)
-        b
+        console.error(erro);
+        alert("Não foi possível contactar o servidor.");
       }
     }
     

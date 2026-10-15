@@ -23,6 +23,7 @@ function Despesas() {
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
+  const [aGuardar, setAGuardar] = useState(false);
   const [data, setData] = useState("");
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
   const [categoriasDisponiveis, setCategoriasDisponiveis] = useState<
@@ -31,8 +32,9 @@ function Despesas() {
   const categoria = categoriasDisponiveis.find(
     (item) => item._id === categoriaSelecionada,
   );
+  const valorNumerico = Number(valor.replace(",", "."));
   const movimentoCompleto = Boolean(
-    titulo.trim() && descricao.trim() && valor && data && categoriaSelecionada,
+    titulo.trim() && descricao.trim() && Number.isFinite(valorNumerico) && valorNumerico > 0 && data && categoriaSelecionada,
   );
   const despesa = tipo === "despesa";
   const rotuloTipo = despesa ? "Despesa" : "Receita";
@@ -48,14 +50,17 @@ function Despesas() {
         body: JSON.stringify({
           titulo,
           descricao,
-          valor,
+          valor: valorNumerico,
           data,
-          categoriaSelecionada,
+          categoria: categoriaSelecionada,
         }),
       });
       if (!resposta.ok) {
-        throw new Error("Erro ao adicionar despesa");
+        const erro = await resposta.json().catch(() => null);
+        alert(erro?.message ?? "Erro ao adicionar despesa");
+        return;
       }
+      navigate("/dashboard");
     } catch {
       alert("Não foi possível contactar o servidor.");
     }
@@ -71,14 +76,17 @@ function Despesas() {
         body: JSON.stringify({
           titulo,
           descricao,
-          valor,
+          valor: valorNumerico,
           data,
-          categoriaSelecionada,
+          categoria: categoriaSelecionada,
         }),
       });
       if (!resposta.ok) {
-        throw new Error("Erro ao adicionar receita");
+        const erro = await resposta.json().catch(() => null);
+        alert(erro?.message ?? "Erro ao adicionar receita");
+        return;
       }
+      navigate("/dashboard");
     } catch {
       alert("Não foi possível contactar o servidor.");
     }
@@ -113,12 +121,21 @@ function Despesas() {
   }, [navigate]);
   async function guardarMovimento(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (tipo === "despesa") {
-      await AdicionarDespesa();
+    if (aGuardar) return;
+    if (!movimentoCompleto) {
+      alert("Preenche todos os campos e indica um valor superior a zero.");
       return;
     }
-    await AdicionarReceita();
+    setAGuardar(true);
+    try {
+      if (tipo === "despesa") {
+        await AdicionarDespesa();
+      } else {
+        await AdicionarReceita();
+      }
+    } finally {
+      setAGuardar(false);
+    }
   }
 
   return (
@@ -267,6 +284,7 @@ function Despesas() {
                   <button
                     type="button"
                     className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-blue-300 bg-blue-50 px-3 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                    onClick={() => navigate("/dashboard/categoria")}
                   >
                     <span className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-white">
                       <Plus size={14} aria-hidden="true" />
@@ -285,9 +303,10 @@ function Despesas() {
               </Link>
               <button
                 type="submit"
+                disabled={aGuardar}
                 className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition ${despesa ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"}`}
               >
-                <Check size={17} /> Guardar {rotuloTipo.toLowerCase()}
+                <Check size={17} /> {aGuardar ? "A guardar…" : `Guardar ${rotuloTipo.toLowerCase()}`}
               </button>
             </div>
           </form>

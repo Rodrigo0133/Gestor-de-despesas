@@ -13,6 +13,9 @@ node_modules
 dist
 dist-ssr
 *.local
+progress.md
+task_plan.md
+findings.md
 
 # Editor directories and files
 .vscode/*

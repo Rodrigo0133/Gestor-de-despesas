@@ -4,7 +4,7 @@ const expense = z.object({
   titulo: z.string(),
   descricao: z.string(),
   valor: z.float32(),
-  data: z.date(),
+  data: z.iso.date(),
   categoria: z.string(),
 });
 export async function ValidateMovimentsMiddleware(
@@ -18,7 +18,7 @@ export async function ValidateMovimentsMiddleware(
   }
   const respost = expense.safeParse(req.body);
   if (!respost.success) {
-    return res.status(404).json({
+    return res.status(400).json({
       message: "Valores inseridos errados",
     });
   }

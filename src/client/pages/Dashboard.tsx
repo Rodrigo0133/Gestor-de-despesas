@@ -13,6 +13,10 @@ import {
 import { formatarMoeda } from "../utils/formatarmoeda";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const formatarPercentagem = new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 1, signDisplay: "exceptZero" });
+function formatarMes(mes: string) {
+  return new Date(`${mes}-01T00:00:00Z`).toLocaleDateString("pt-PT", { month: "long", year: "numeric", timeZone: "UTC" });
+}
 
 function AbrirDespesas(navigate: ReturnType<typeof useNavigate>): void {
   console.log("Abrindo página de despesas...");
@@ -44,9 +48,17 @@ function Dashboard() {
   const [totalDespesas, setTotalDespesas] = useState(0);
   const [totalReceitas, setTotalReceitas] = useState(0);
   const [totalSaldo, setTotalSaldo] = useState(0);
-  const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [mesSelecionado, setMesSelecionado] = useState(() => new Date().toISOString().slice(0, 7));
+  const [meses, setMeses] = useState<string[]>([]);
+  const [comparacao, setComparacao] = useState<{
+    comparacaoDespesas: number;
+    comparacaoReceitas: number;
+    comparacaoSaldo: number;
+  } | null>(null);
   const [categorias, setCategorias] = useState<CategoriaResumo[]>([]);
   const [movimentos, setMovimentos] = useState<Movimento[]>([]);
+  const [ano, mes] = mesSelecionado.split("-").map(Number);
+  const mesAnterior = new Date(Date.UTC(ano, mes - 2, 1)).toISOString().slice(0, 7);
 
   const gradienteCategorias = categorias.length
     ? `conic-gradient(${categorias
@@ -66,6 +78,7 @@ function Dashboard() {
 
 
   useEffect(() => {
+    const controlador = new AbortController();
     const carregarDashboard = async () => {
       try {
         const resposta = await fetch(
@@ -73,6 +86,7 @@ function Dashboard() {
           {
             credentials: "include",
             method: "GET",
+            signal: controlador.signal,
           },
         );
         const resultado = await resposta.json();
@@ -87,27 +101,38 @@ function Dashboard() {
         setTotalDespesas(resultado.resumo.totalDespesas);
         setTotalReceitas(resultado.resumo.totalReceitas);
         setTotalSaldo(resultado.resumo.saldo);
+        setComparacao(resultado.comparacao);
         const resposta2 = await fetch(
           `${API_URL}/api/summary/categories?mes=${mesSelecionado}`,
-          { credentials: "include" },
+          { credentials: "include", signal: controlador.signal },
         );
 
         const resultado2 = await resposta2.json();
         if (resposta2.ok) {
           setCategorias(resultado2.categorias);
+        } else {
+          throw new Error("Não foi possível carregar as categorias.");
         }
         const respostaMovimentos = await fetch(
-          `${API_URL}/api/movement/10`,
-          { credentials: "include" },
+          `${API_URL}/api/movement/10?mes=${mesSelecionado}`,
+          { credentials: "include", signal: controlador.signal },
         );
 
         const resultadoMovimentos = await respostaMovimentos.json();
 
         if (respostaMovimentos.ok) {
           setMovimentos(resultadoMovimentos.movimentos);
+          setMeses(resultadoMovimentos.meses);
+        } else {
+          throw new Error("Não foi possível carregar os movimentos.");
         }
       } catch {
-        alert("Não foi possível contactar o servidor.");
+        if (!controlador.signal.aborted) {
+          setCategorias([]);
+          setMovimentos([]);
+          setComparacao(null);
+          alert("Não foi possível carregar o dashboard.");
+        }
       }
     };
     const VerificarHoras = () => {
@@ -125,6 +150,7 @@ function Dashboard() {
 
     VerificarHoras();
     carregarDashboard();
+    return () => controlador.abort();
   }, [navigate, mesSelecionado]);
 
   return (
@@ -151,9 +177,9 @@ function Dashboard() {
                   onChange={(event) => setMesSelecionado(event.target.value)}
                   className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/20 hover:cursor-pointer"
                 >
-                  <option value="2024-05">Maio de 2024</option>
-                  <option value="2024-04">Abril de 2024</option>
-                  <option value="2024-03">Março de 2024</option>
+                  {[...new Set([mesSelecionado, ...meses])].sort().reverse().map((mes) => (
+                    <option key={mes} value={mes}>{formatarMes(mes)}</option>
+                  ))}
                 </select>
 
                 <ChevronDown
@@ -181,8 +207,10 @@ function Dashboard() {
                   {formatarMoeda.format(totalSaldo)}
                 </p>
                 <p className="mt-2 text-xs">
-                  <span className="font-semibold text-green-700">+12,4%</span>
-                  <span className="text-slate-500"> vs. abril</span>
+                  <span className={`font-semibold ${(comparacao?.comparacaoSaldo ?? 0) < 0 ? "text-red-700" : "text-green-700"}`}>
+                    {comparacao ? `${formatarPercentagem.format(comparacao.comparacaoSaldo)}%` : "—"}
+                  </span>
+                  <span className="text-slate-500"> vs. {formatarMes(mesAnterior)}</span>
                 </p>
               </div>
               <div
@@ -201,8 +229,10 @@ function Dashboard() {
                   {formatarMoeda.format(totalReceitas)}
                 </p>
                 <p className="mt-2 text-xs">
-                  <span className="font-semibold text-green-700">+8,7%</span>
-                  <span className="text-slate-500"> vs. abril</span>
+                  <span className={`font-semibold ${(comparacao?.comparacaoReceitas ?? 0) < 0 ? "text-red-700" : "text-green-700"}`}>
+                    {comparacao ? `${formatarPercentagem.format(comparacao.comparacaoReceitas)}%` : "—"}
+                  </span>
+                  <span className="text-slate-500"> vs. {formatarMes(mesAnterior)}</span>
                 </p>
               </div>
               <div
@@ -221,8 +251,10 @@ function Dashboard() {
                   {formatarMoeda.format(totalDespesas)}
                 </p>
                 <p className="mt-2 text-xs">
-                  <span className="font-semibold text-red-700">−3,2%</span>
-                  <span className="text-slate-500"> vs. abril</span>
+                  <span className={`font-semibold ${(comparacao?.comparacaoDespesas ?? 0) > 0 ? "text-red-700" : "text-green-700"}`}>
+                    {comparacao ? `${formatarPercentagem.format(comparacao.comparacaoDespesas)}%` : "—"}
+                  </span>
+                  <span className="text-slate-500"> vs. {formatarMes(mesAnterior)}</span>
                 </p>
               </div>
               <div
@@ -299,7 +331,7 @@ function Dashboard() {
           <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5">
               <h2 className="font-bold text-slate-900">Movimentos recentes</h2>
-              <button className="text-sm font-medium text-blue-600 transition hover:text-blue-800">
+              <button onClick={() => navigate("/dashboard/movimentos")} className="text-sm font-medium text-blue-600 transition hover:text-blue-800">
                 Ver todos
               </button>
             </div>
@@ -317,6 +349,9 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
+                  {movimentos.length === 0 && (
+                    <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-500">Não existem movimentos neste mês.</td></tr>
+                  )}
                   {movimentos.map((movimento) => (
                       <tr
                         key={movimento._id}
@@ -340,7 +375,7 @@ function Dashboard() {
                         </td>
                         <td
                           className={`whitespace-nowrap px-5 py-3 text-right font-semibold ${
-                            movimento.valor >= 0
+                            movimento.tipo === "receita"
                               ? "text-green-700"
                               : "text-red-600"
                           }`}

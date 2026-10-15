@@ -14,7 +14,8 @@ function Menu_dashboard() {
   const navigate = useNavigate();
   useEffect(() => {
     async function Nomedousuario() {
-      const resposta = await fetch(`${API_URL}/api/dashboard`, {
+      const mesAtual = new Date().toISOString().slice(0, 7);
+      const resposta = await fetch(`${API_URL}/api/dashboard?mes=${mesAtual}`, {
         method: "GET",
         credentials: "include",
       });

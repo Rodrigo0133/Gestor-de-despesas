@@ -57,6 +57,7 @@ export async function NewExpenseController(req: Request, res: Response) {
       }
       try {
         const novaDespesa = await expense.create({
+          titulo,
           descricao,
           valor,
           data: dataDoMovimento,

@@ -60,6 +60,7 @@ afterAll(async () => {
 });
 
 const rotasPrivadas = [
+  ["GET", "/movements/export/excel"],
   ["GET", "/Dashboard"], ["GET", "/movement/10"], ["GET", `/movements/${userId}`],
   ["GET", "/allcategories"], ["GET", `/onecategory/${userId}`], ["POST", "/newcategory"],
   ["PATCH", `/UpdateCategory/${userId}`], ["DELETE", `/DeleteCategory/${userId}`],

@@ -38,6 +38,8 @@ function Movements() {
   const [pesquisa, setPesquisa] = useState("");
   const [ordenacao, setOrdenacao] = useState<keyof typeof opcoesOrdenacao>("recentes");
   const [erro, setErro] = useState("");
+  const [erroExportacao, setErroExportacao] = useState("");
+  const [aExportar, setAExportar] = useState(false);
   const [movimentoExpandido, setMovimentoExpandido] = useState<string | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
@@ -78,6 +80,37 @@ function Movements() {
   });
   const temFiltros = Boolean(pesquisa.trim() || mesSelecionado || tipoSelecionado !== "todos" || ordenacao !== "recentes");
 
+  async function exportarExcel() {
+    if (aExportar) return;
+    setAExportar(true);
+    setErroExportacao("");
+    try {
+      const filtros = new URLSearchParams({ tipo: tipoSelecionado, pesquisa, ordenacao });
+      if (mesSelecionado) filtros.set("mes", mesSelecionado);
+      const resposta = await fetch(`${API_URL}/api/movements/export/excel?${filtros}`, {
+        credentials: "include",
+      });
+      if (resposta.status === 401) {
+        navigate("/login");
+        return;
+      }
+      if (!resposta.ok) throw new Error("Falha na exportação");
+      const ficheiro = await resposta.blob();
+      const endereco = URL.createObjectURL(ficheiro);
+      const ligacao = document.createElement("a");
+      ligacao.href = endereco;
+      ligacao.download = `movimentos-${mesSelecionado || "todos"}.xlsx`;
+      document.body.appendChild(ligacao);
+      ligacao.click();
+      ligacao.remove();
+      window.setTimeout(() => URL.revokeObjectURL(endereco), 1000);
+    } catch {
+      setErroExportacao("Não foi possível exportar para Excel. Tenta novamente.");
+    } finally {
+      setAExportar(false);
+    }
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-900 md:grid md:grid-cols-[200px_minmax(0,1fr)]">
       <Menu_dashboard />
@@ -96,16 +129,19 @@ function Movements() {
           </div>
           <button
             type="button"
+            onClick={exportarExcel}
+            disabled={aExportar}
+            aria-busy={aExportar}
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:w-auto"
           >
             <FileSpreadsheet size={18} aria-hidden="true" />
-            Exportar para Excel
+            {aExportar ? "A exportar…" : "Exportar para Excel"}
           </button>
         </header>
 
-        {erro && (
+        {(erro || erroExportacao) && (
           <p role="alert" className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-            {erro}
+            {erroExportacao || erro}
           </p>
         )}
 

@@ -105,7 +105,7 @@ export async function DeleteRevenue(req: Request, res: Response){
 export async function UpdateRevenue(req: Request, res: Response){
   const userId = req.session.userId;
   const receitasid = req.params.id;
-  const { descricao, valor, data, categoria } = req.body;
+  const { titulo, descricao, valor, data, categoria } = req.body;
   if (!userId) {
     return res.status(401).json({
       message: "Precisas de iniciar sessão",
@@ -117,25 +117,40 @@ export async function UpdateRevenue(req: Request, res: Response){
       message: "ID do movimento inválido",
     });
   }
-  if (!descricao || !valor || !data || !categoria) {
+  if (typeof titulo !== "string" || !titulo.trim() || typeof descricao !== "string" || !descricao.trim() ||
+      typeof valor !== "number" || !Number.isFinite(valor) || valor <= 0 ||
+      typeof categoria !== "string" || !isValidObjectId(categoria)) {
     return res.status(400).json({
-      message: "falta de valores",
+      message: "Preenche todos os campos e indica um valor superior a zero.",
     });
   }
+  const dataDoMovimento = converterDataDoUtilizador(data);
+  if (!dataDoMovimento) {
+    return res.status(400).json({ message: "Data inválida. Usa o formato AAAA-MM-DD" });
+  }
   try {
+    const categoriaExistente = await categorias.findOne({ _id: categoria, userId });
+    if (!categoriaExistente) {
+      return res.status(400).json({ message: "Categoria não encontrada" });
+    }
     const ReceitaAtualizada = await receitas.findOneAndUpdate(
       {
         userId: userId,
         _id: receitasid,
       },
       {
-        descricao,
+        titulo: titulo.trim(),
+        descricao: descricao.trim(),
         valor,
-        data,
+        data: dataDoMovimento,
         categoria,
       },
+      { returnDocument: "after", runValidators: true },
     );
-    return res.status(201).json({
+    if (!ReceitaAtualizada) {
+      return res.status(404).json({ message: "Movimento não encontrado" });
+    }
+    return res.status(200).json({
       message: "receita atualizada",
       ReceitaAtualizada,
     });

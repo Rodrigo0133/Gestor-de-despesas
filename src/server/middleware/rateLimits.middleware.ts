@@ -2,7 +2,7 @@ import { rateLimit } from "express-rate-limit";
 
 export const dashboard_limit = rateLimit({
   windowMs: 60 * 1000,
-  limit: 20,
+  limit: 30,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {

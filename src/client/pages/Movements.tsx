@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import Menu_dashboard from "../components/Menu_dashboad";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Top_Painel from "../components/Top_Painel";
 import { formatarMoeda } from "../utils/formatarmoeda";
-import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronDown, FileSpreadsheet, ListFilter, ReceiptText, Search, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChevronDown, FileSpreadsheet, ListFilter, Pencil, ReceiptText, Search, Trash2, X } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const opcoesOrdenacao = {
@@ -203,7 +203,7 @@ function Movements() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[900px] text-left text-sm">
               <caption className="sr-only">Receitas e despesas do período selecionado</caption>
               <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
                 <tr>
@@ -212,12 +212,13 @@ function Movements() {
                   <th scope="col" className="px-4 py-4 font-semibold">Categoria</th>
                   <th scope="col" className="px-4 py-4 font-semibold">Tipo</th>
                   <th scope="col" className="px-6 py-4 text-right font-semibold">Valor</th>
+                  <th scope="col" className="px-6 py-4 text-right font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {movimentosFiltrados.length === 0 && !erro && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
+                    <td colSpan={6} className="px-6 py-16 text-center">
                       <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                         <ReceiptText size={23} aria-hidden="true" />
                       </span>
@@ -267,6 +268,12 @@ function Movements() {
                     </td>
                     <td className={`whitespace-nowrap px-6 py-5 text-right font-semibold tabular-nums ${movimento.tipo === "receita" ? "text-emerald-700" : "text-rose-700"}`}>
                       {movimento.tipo === "receita" ? "+" : "−"}{formatarMoeda.format(movimento.valor)}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex justify-end gap-2">
+                        <Link to={`/dashboard/movimentos/${movimento._id}/editar`} aria-label={`Editar ${movimento.titulo || "movimento"}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"><Pencil size={14} aria-hidden="true" /> Editar</Link>
+                        <Link to={`/dashboard/movimentos/${movimento._id}/eliminar`} aria-label={`Eliminar ${movimento.titulo || "movimento"}`} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"><Trash2 size={14} aria-hidden="true" /> Eliminar</Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

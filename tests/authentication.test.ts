@@ -130,8 +130,8 @@ test("login e registo partilham 5 pedidos por minuto e devolvem 429", async () =
   expect(dados.status).toBe(401);
 });
 
-test("rotas de dados partilham 20 pedidos sem bloquear login ou logout", async () => {
-  for (let indice = 0; indice < 20; indice++) {
+test("rotas de dados partilham 30 pedidos sem bloquear login ou logout", async () => {
+  for (let indice = 0; indice < 30; indice++) {
     const rota = indice % 2 === 0 ? "allcategories" : "movement/0";
     const resposta = await fetch(`${baseUrl}/api/${rota}`);
     expect(resposta.status).toBe(401);

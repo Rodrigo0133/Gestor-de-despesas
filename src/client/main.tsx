@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard.tsx';
 import Despesas from './pages/Despesas.tsx';
 import Movements from './pages/Movements.tsx';
 import Categoria from './pages/Categoria.tsx';
+import EditarMovimento from './pages/EditarMovimento.tsx';
+import EliminarMovimento from './pages/EliminarMovimento.tsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +35,14 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/movimentos",
     element: <Movements />
+  },
+  {
+    path: "/dashboard/movimentos/:id/editar",
+    element: <EditarMovimento />
+  },
+  {
+    path: "/dashboard/movimentos/:id/eliminar",
+    element: <EliminarMovimento />
   },
   {
     path: "/dashboard/categoria",

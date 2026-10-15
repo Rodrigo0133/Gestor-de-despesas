@@ -2,7 +2,7 @@ import { rateLimit } from "express-rate-limit";
 
 export const dashboard_limit = rateLimit({
   windowMs: 60 * 1000,
-  limit: 30,
+  limit: 60,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -18,4 +18,4 @@ export const login_limit = rateLimit({
   message: {
     message: "Demasiadas tentativas de autenticação. Tenta novamente dentro de um minuto.",
   },
-});
+})

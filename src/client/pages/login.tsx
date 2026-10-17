@@ -1,7 +1,7 @@
 import { KeyRound, User } from "lucide-react"
 import Input from "../components/Input"
 import { useState, type FormEvent, useEffect } from "react"
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -93,6 +93,7 @@ function Login(){
                 >
                   Logar
                 </button>
+                <p className="text-sm">Ainda não tens conta? <Link to="/registrar" className="font-medium underline underline-offset-4">Criar conta</Link></p>
               </form>
             </div>
     )

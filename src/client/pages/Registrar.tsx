@@ -1,6 +1,6 @@
 import { KeyRound, Mail, User } from "lucide-react";
 import { useState, type FormEvent, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Input from "../components/Input";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -126,6 +126,7 @@ function Registrar() {
         >
           Registar
         </button>
+        <p className="text-sm">Já tens conta? <Link to="/login" className="font-medium underline underline-offset-4">Iniciar sessão</Link></p>
       </form>
     </div>
   );
